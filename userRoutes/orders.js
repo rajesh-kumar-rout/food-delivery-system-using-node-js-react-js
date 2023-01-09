@@ -84,9 +84,9 @@ router.get(
             return res.status(404).json({ message: "Order not found" })
         }
 
-        const foods = await query("SELECT * FROM food_ordered_foods WHERE orderId = ?", [orderId])
+        const foods = await query("SELECT name, price, qty FROM food_ordered_foods WHERE orderId = ?", [orderId])
 
-        const deliveryAddress = await query("SELECT * FROM food_delivery_address WHERE orderId = ? LIMIT 1", [orderId])
+        const deliveryAddress = await query("SELECT name, mobile, street, landmark, instruction FROM food_delivery_address WHERE orderId = ? LIMIT 1", [orderId])
 
         const paymentDetails = await query("SELECT totalPrice, gstPercentage, deliveryFee, (totalPrice * (gstPercentage / 100)) AS gstAmount FROM food_payment_details WHERE orderId = ?", [orderId])
 

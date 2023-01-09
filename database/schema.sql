@@ -75,7 +75,6 @@ CREATE TABLE `food_ordered_foods` (
 );
 
 CREATE TABLE `food_payment_details` (
-    `transactionId` VARCHAR(30) NOT NULL,
     `totalPrice` INT NOT NULL,
     `deliveryFee` INT NOT NULL,
     `gstPercentage` INT NOT NULL,
@@ -85,7 +84,7 @@ CREATE TABLE `food_payment_details` (
 
 CREATE TABLE `food_delivery_address` (
     `name` VARCHAR(30) NOT NULL,
-    `mobile` INT NOT NULL,
+    `mobile` BIGINT(10) NOT NULL,
     `street` VARCHAR(50) NOT NULL,
     `landmark` VARCHAR(50) NOT NULL,
     `instruction` VARCHAR(50) NOT NULL,
