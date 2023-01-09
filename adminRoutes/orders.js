@@ -29,7 +29,7 @@ router.get(
             return res.status(404).json({ message: "Order not found" })
         }
 
-        const orderedFoods = await query("SELECT name, price, qty FROM food_ordered_foods WHERE orderId = ?", [orderId])
+        const orderedFoods = await query("SELECT id, name, price, qty FROM food_ordered_foods WHERE orderId = ?", [orderId])
 
         const order = await fetch("SELECT id, orderStatusId, deliveryAgentId, userId, createdAt, updatedAt FROM food_orders WHERE id = ?", [orderId])
 
@@ -79,7 +79,7 @@ router.patch(
             return res.status(404).json({ message: "Delivery boy not found" })
         }
 
-        await query("UPDATE food_orders SET deliveryBoyId = ?, orderStatusId = ? WHERE id = ?", [deliveryBoyId, orderStatusId, orderId])
+        await query("UPDATE food_orders SET deliveryAgentId = ?, orderStatusId = ? WHERE id = ?", [deliveryBoyId, orderStatusId, orderId])
 
         res.json({ message: "Order updated successfully" })
     }
