@@ -1,0 +1,27 @@
+.relative {
+    position: relative;
+}
+
+.border-none {
+    border: none;
+}
+
+.max-w-500 {
+    max-width: 500px;
+}
+.max-w-600 {
+    max-width: 600px;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.max-h-content {
+    max-height: min-content;
+}

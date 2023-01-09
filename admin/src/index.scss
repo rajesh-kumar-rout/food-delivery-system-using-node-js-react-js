@@ -1,0 +1,543 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap");
+
+$gray50: #f9fafb;
+$gray100: #f3f4f6;
+$gray200: #e5e7eb;
+$gray300: #d1d5db;
+$gray400: #9ca3af;
+$gray200: #e5e7eb;
+$gray600: #4b5563;
+$gray700: #374151;
+$gray800: #1f2937;
+$orange400: #fb923c;
+$orange500: #f97316;
+$orange600: #ea580c;
+$orange700: #c2410c;
+$orange800: #9a3412;
+$red600: #dc2626;
+$red800: #991b1b;
+$red400: #f87171;
+$white: #FFFFFF;
+$black: #000000;
+$red100: #fee2e2;
+$green100: #dcfce7;
+$green400: #4ade80;
+$green600: #16a34a;
+$navbar-height: 70px;
+$layout-height: calc(100vh - 70px);
+$sidebar-width: 240px;
+
+$mobile-screen: 768px;
+$tablet-screen: 1024px;
+$desktop-screen: 1200px;
+
+/* -----------------------------------------------------------------------
+------------------------- RESETING DEFAULT STYLEs ------------------------
+-------------------------------------------------------------------------- */
+* {
+    font-family: 'Poppins', sans-serif;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    box-sizing: border-box;
+}
+
+body {
+    font-weight: normal;
+    font-size: 16px;
+}
+
+ul {
+    list-style-type: none;
+}
+
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+img {
+    width: 100%;
+    border-radius: 4px;
+    object-fit: cover;
+    display: block;
+}
+
+a {
+    text-decoration: none;
+}
+
+body {
+    background-color: $gray200;
+    color: $gray800;
+}
+
+svg:not(.Toastify svg)  {
+    fill: inherit;
+    display: block;
+}
+
+/* ----------------------------------------------------------------------------
+---------------------------------- UTILITIES ----------------------------------
+------------------------------------------------------------------------------- */
+.min-w-700 {
+    min-width: 700px;
+}
+
+.ml-1 {
+    margin-left: 4px;
+}
+
+.mb-3 {
+    margin-bottom: 12px;
+}
+
+.form {
+    max-width: 700px;
+    margin: auto;
+
+    &-img-preview{
+        width: 80px;
+        margin-top: 12px;
+    }
+}
+
+.page-layout {
+    height: $layout-height;
+    margin-top: $navbar-height;
+    overflow-y: auto;
+    margin-left: $sidebar-width;
+    padding: 16px;
+
+    @media (max-width: 1024px) {
+        padding: 10px;
+    }
+
+    @media (max-width: 768px) {
+        margin-left: 0;
+    }
+}
+
+.table-img {
+    height: 50px;
+    width: 50px;
+    margin: auto;
+}
+
+/* -----------------------------------------------------------------------
+--------------------------- COMMON COMPONENTS ----------------------------
+-------------------------------------------------------------------------- */
+.form-control {
+    border: 2px solid $gray300;
+    border-radius: 6px;
+    padding: 8px;
+    width: 100%;
+    outline: none;
+
+    &:focus {
+        border-color: $orange600;
+    }
+
+    &:disabled {
+        background-color: $gray200;
+    }
+}
+
+.alert{
+    padding: 16px 12px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid transparent;
+
+    &-error{
+        background-color: $red100;
+        border-color: $red400;
+        color: $red600;
+        fill: $red600;
+    }   
+
+    &-success{
+        background-color: $green100;
+        border-color: $green400;
+        color: $green600;
+        fill: $green600;
+    }   
+}
+
+.mb-2{
+    margin-bottom: 8px;
+}
+
+.form-error{
+    margin-top: 4px;
+    font-size: 14px;
+    color: red;
+    font-weight: 600;
+}
+
+.form-check {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    &-input {
+        height: 20px;
+        width: 20px;
+        color: $orange600;
+    }
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 300ms;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: $orange600;
+    color: $white;
+    fill: $white;
+
+    &:hover {
+        background-color: $orange800;
+    }
+
+    &:disabled {
+        background-color: $orange400;
+    }
+}
+
+.btn-danger {
+    background-color: $red600;
+    color: $white;
+    fill: $white;
+
+    &:hover {
+        background-color: $red800;
+    }
+
+    &:disabled {
+        background-color: $red400;
+    }
+}
+
+.btn-icon {
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+
+    &-btns {
+        display: flex;
+        gap: 8px;
+    }
+
+    &-btn {
+        background-color: $gray200;
+        padding: 6px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.card {
+    background-color: $white;
+    border-radius: 6px;
+    border: 2px solid $gray300;
+
+    &-header {
+        padding: 12px 16px;
+        border-bottom: 2px solid $gray300;
+
+        &-title{
+            font-weight: 600;
+            font-size: 18px;
+            color: $orange600;
+        }
+    }
+
+    &-body {
+        padding: 16px;
+    }
+
+    &-footer {
+        padding: 12px 16px;
+        border-top: 2px solid $gray300;
+    }
+}
+
+.table {
+    overflow-x: auto;
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+    }
+
+    thead {
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    tr {
+        border-top: 2px solid $gray300;
+    }
+
+    thead tr:first-child {
+        border-top: none;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        margin: auto;
+
+        & svg{
+            margin: auto;
+        }
+    }
+
+    th {
+        font-weight: 700;
+    }
+}
+
+
+/* -----------------------------------------------------------------------
+------------------------------- COMPONENTS -------------------------------
+-------------------------------------------------------------------------- */
+.navbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0px 16px;
+    border-bottom: 2px solid $gray300;
+    height: $navbar-height;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    background-color: $white;
+    fill: $orange600;
+
+    &-title {
+        font-size: 20px;
+        color: $orange600;
+        font-weight: 700;
+        margin-left: 4px;
+    }
+
+    &-menu-btn {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        &-menu-btn {
+            display: block;
+        }
+    }
+}
+
+.sidebar {
+    background-color: $white;
+    width: $sidebar-width;
+    border-right: 2px solid $gray300;
+    overflow-y: auto;
+    transition: all 300ms;
+    position: fixed;
+    left: -$sidebar-width;
+    top: $navbar-height;
+    height: $layout-height;
+
+    &[data-show=true] {
+        left: 0;
+    }
+
+    &-nav-link {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        gap: 12px;
+        fill: $gray700;
+
+        &:hover:not(&.active) {
+            background-color: $gray200;
+        }
+
+        &.active {
+            background-color: $orange500;
+            color: $white;
+            fill: $white;
+        }
+    }
+
+    &-name-icon {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex: 1;
+        color: inherit;
+    }
+
+    &-sub-link {
+        padding: 16px;
+        padding-left: 52px;
+        display: block;
+
+        &:hover {
+            background-color: $gray200;
+        }
+
+        &.active {
+            color: $orange600;
+        }
+    }
+}
+
+/* -----------------------------------------------------------------------
+--------------------------------- PAGES ----------------------------------
+-------------------------------------------------------------------------- */
+.home {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    color: $white;
+
+    @media (max-width: $desktop-screen) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: $mobile-screen) {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    &-card {
+        border-radius: 4px;
+        background-color: $orange500;
+    }
+
+    &-count {
+        padding: 28px 16px;
+        text-align: center;
+        font-size: 40px;
+        font-weight: 700;
+    }
+
+    &-label {
+        text-align: center;
+        padding: 12px;
+        font-weight: 600;
+        border-top: 2px solid $gray200;
+    }
+}
+
+.orders {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr 2fr;
+        gap: 16px;
+    }
+
+    &-filter-btns {
+        display: flex;
+        justify-content: end;
+        gap: 4px;
+    }
+}
+
+.manage-food {
+    &-variant {
+        background-color: $gray200;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+        margin-bottom: 8px;
+    }
+
+    &-btn-text {
+        font-weight: 700;
+        font-size: 14px;
+        color: $orange600;
+        cursor: pointer;
+        display: inline-block;
+    }
+}
+
+.order-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+
+    @media (max-width: $desktop-screen) {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    &-card {
+        height: min-content;
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+.loader{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    // background-color: red;
+
+    &-spinner {
+        // margin: 60px 0;
+        height: 64px;
+        width: 64px;
+        display: block;
+        border-radius: 100%;
+        border: 4px solid $orange600;
+        animation: spin 1s linear infinite;
+        border-bottom-color: transparent;
+    }
+}
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

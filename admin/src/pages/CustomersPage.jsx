@@ -1,0 +1,51 @@
+import { useEffect } from "react"
+import { useState } from "react"
+import { getData } from "../utils/fetcher"
+
+export default function CustomersPage() {
+    const [customeres, setCustomers] = useState([])
+    const [isLoading, setIsLoading] = useState(false)
+
+    const fetchCustomers = async () => {
+        const { data } = await getData("/customers")
+        setCustomers(data)
+    }
+
+    useEffect(() => {
+        fetchCustomers()
+    }, [])
+
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
+
+    return (
+        <div className="card">
+            <div className="card-header card-header-title">Customers</div>
+            <div className="table">
+                <table className="min-w-700">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {customeres.map(customer => (
+                            <tr>
+                                <td>{customer.id}</td>
+                                <td>{customer.name}</td>
+                                <td>{customer.email}</td>
+                                <td>{customer.mobile}</td>
+                                <td>{customer.createdAt}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
