@@ -5,6 +5,16 @@ import { checkValidationError } from "../utils/validator.js"
 
 const router = express()
 
+router.get("/", async (req, res) => {
+    const orders = await query("SELECT food_orders.id, food_delivery_address.mobile, ROUND(food_payment_details.totalPrice + food_payment_details.deliveryFee + (food_payment_details.totalPrice * (food_payment_details.gstPercentage / 100))) AS totalPayable, food_order_statuses.name AS status, food_orders.createdAt FROM food_orders INNER JOIN food_payment_details ON food_payment_details.orderId = food_orders.id INNER JOIN food_delivery_address ON food_delivery_address.orderId = food_orders.id INNER JOIN food_order_statuses ON food_order_statuses.id = food_orders.orderStatusId")
+    res.json(orders)
+})
+
+router.get("/statuses", async (req, res) => {
+    const statuses = await query("SELECT id, name FROM food_order_statuses")
+    res.json(statuses)
+})
+
 router.get(
     "/:orderId",
 
@@ -76,15 +86,5 @@ router.patch(
         res.json({ message: "Order updated successfully" })
     }
 )
-
-router.get("/", async (req, res) => {
-    const orders = await query("SELECT food_orders.id, food_delivery_address.mobile, ROUND(food_payment_details.totalPrice + food_payment_details.deliveryFee + (food_payment_details.totalPrice * (food_payment_details.gstPercentage / 100))) AS totalPayable, food_order_statuses.name AS status, food_orders.createdAt FROM food_orders INNER JOIN food_payment_details ON food_payment_details.orderId = food_orders.id INNER JOIN food_delivery_address ON food_delivery_address.orderId = food_orders.id INNER JOIN food_order_statuses ON food_order_statuses.id = food_orders.orderStatusId")
-    res.json(orders)
-})
-
-router.get("/statuses", async (req, res) => {
-    const statuses = await query("SELECT id, name FROM food_order_statuses")
-    res.json(statuses)
-})
 
 export default router
