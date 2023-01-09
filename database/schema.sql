@@ -67,6 +67,7 @@ CREATE TABLE `food_orders` (
 );
 
 CREATE TABLE `food_ordered_foods` (
+    `id` BIGINT(20) PRIMARY KEY AUTO_INCREMENT,
     `name` VARCHAR(30) NOT NULL,
     `qty` INT NOT NULL,
     `price` INT NOT NULL,
@@ -75,6 +76,7 @@ CREATE TABLE `food_ordered_foods` (
 );
 
 CREATE TABLE `food_payment_details` (
+    `id` BIGINT(20) PRIMARY KEY AUTO_INCREMENT,
     `totalPrice` INT NOT NULL,
     `deliveryFee` INT NOT NULL,
     `gstPercentage` INT NOT NULL,
@@ -83,6 +85,7 @@ CREATE TABLE `food_payment_details` (
 );
 
 CREATE TABLE `food_delivery_address` (
+    `id` BIGINT(20) PRIMARY KEY AUTO_INCREMENT,
     `name` VARCHAR(30) NOT NULL,
     `mobile` BIGINT(10) NOT NULL,
     `street` VARCHAR(50) NOT NULL,

@@ -18,9 +18,7 @@ router.get("/statuses", async (req, res) => {
 router.get(
     "/:orderId",
 
-    param("orderId")
-        .isInt()
-        .toInt(),
+    param("orderId").isInt().toInt(),
 
     checkValidationError,
 
@@ -31,13 +29,13 @@ router.get(
             return res.status(404).json({ message: "Order not found" })
         }
 
-        const orderedFoods = await query("SELECT * FROM food_ordered_foods WHERE orderId = ?", [orderId])
+        const orderedFoods = await query("SELECT name, price, qty FROM food_ordered_foods WHERE orderId = ?", [orderId])
 
-        const order = await fetch("SELECT * FROM food_orders WHERE id = ?", [orderId])
+        const order = await fetch("SELECT id, orderStatusId, deliveryAgentId, userId, createdAt, updatedAt FROM food_orders WHERE id = ?", [orderId])
 
-        const paymentDetails = await fetch("SELECT * FROM food_payment_details WHERE orderId = ? LIMIT 1", [orderId])
+        const paymentDetails = await fetch("SELECT totalPrice, deliveryFee, gstPercentage FROM food_payment_details WHERE orderId = ? LIMIT 1", [orderId])
 
-        const deliveryAddress = await fetch("SELECT * FROM food_delivery_address WHERE orderId = ? LIMIT 1", [orderId])
+        const deliveryAddress = await fetch("SELECT name, mobile, street, landmark, instruction FROM food_delivery_address WHERE orderId = ? LIMIT 1", [orderId])
 
         res.json({
             order,
