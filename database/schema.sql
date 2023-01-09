@@ -62,7 +62,7 @@ CREATE TABLE `food_orders` (
     `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`userId`) REFERENCES `food_users`(`id`),
-    FOREIGN KEY (`orderStatusId`) REFERENCES `food_order_statuses`(`id`)
+    FOREIGN KEY (`orderStatusId`) REFERENCES `food_order_statuses`(`id`),
     FOREIGN KEY (`deliveryAgentId`) REFERENCES `food_users`(`id`)
 );
 
