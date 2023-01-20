@@ -1,30 +1,42 @@
 import { Router } from "express"
 import { body } from "express-validator"
-import { query, fetch } from "../database/connection.js"
+import knex from "../utils/database.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const settings = await query("SELECT id, deliveryFee, gstPercentage, updatedAt FROM food_settings")
+    const settings = await knex("foodSettings")
+        .select(
+            "id", 
+            "deliveryFee", 
+            "gstPercentage",
+            "createdAt", 
+            "updatedAt"
+        )
+        .first()
+
     res.json(settings)
 })
 
 router.patch(
     "/",
 
-    body("deliveryFee").isInt(),
+    body("deliveryFee").isInt().toInt(),
 
-    body("gstPercentage").isInt(),
+    body("gstPercentage").isInt().toInt(),
 
     checkValidationError,
 
     async (req, res) => {
         const { deliveryFee, gstPercentage } = req.body
 
-        await query("UPDATE food_settings SET deliveryFee = ?, gstPercentage = ?", [deliveryFee, gstPercentage])
+        await knex("foodSettings").update({
+            deliveryFee,
+            gstPercentage
+        })
 
-        res.json({ message: "Setting edited successfully" })
+        res.json({ success: "Setting edited successfully" })
     }
 )
 

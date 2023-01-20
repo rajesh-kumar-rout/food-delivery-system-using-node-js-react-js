@@ -1,19 +1,40 @@
 import { config } from "dotenv"
+import knex from "../utils/database.js"
 
 config()
 
 export async function authenticate(req, res, next) {
-    console.log(req.session.userId);
-    req.session.userId ? next() : res.status(401).json({ message: "Session expired or not set" })
+    const token = req.headers.authorization ?? null
+
+    const tokenRow = await knex("foodTokens")
+        .where({ token })
+        .first()
+
+    if (tokenRow) {
+        req.currentUserId = tokenRow.userId
+    }
+
+    next()
+}
+export async function isAuthenticated(req, res, next) {
+    if (!req.currentUserId) {
+        return res.status(401).json({ error: "Authentication failed" })
+    }
+
+    next()
 }
 
 export async function isAdmin(req, res, next) {
-    req.session.isAdmin ? next() : res.status(403).json({ message: "Access denied" })
-}
+    const currentUserId = req.currentUserId ?? null
 
-export async function verifyCsrf(req, res, next) {
-    if (req.method !== "GET" && req.headers['x-xsrf-token'] !== req.session.csrfToken) {
-        return res.status(403).json({ message: "Access denied" })
+    const isAdmin = await knex("foodUsers")
+        .where({ id: currentUserId })
+        .where({ isAdmin: true })
+        .select(1)
+        .first()
+
+    if (!isAdmin) {
+        return res.status(403).json({ error: "Access denied" })
     }
 
     next()

@@ -1,56 +1,45 @@
 import { Router } from "express"
-import { body, param } from "express-validator"
-import { query, fetch } from "../database/connection.js"
-import { destroy, upload } from "../utils/cloudinary.js"
-import { checkValidationError, isBase64Img } from "../utils/validator.js"
+import { body } from "express-validator"
+import knex from "../utils/database.js"
+import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const sliders = await query("SELECT id, imgUrl, createdAt FROM food_sliders")
+    const sliders = await knex("foodSliders")
+        .select(
+            "id",
+            "imageUrl",
+            "createdAt"
+        )
+
     res.json(sliders)
 })
 
 router.post(
     "/",
 
-    body("img")
-        .isString()
-        .custom(isBase64Img),
+    body("imageUrl").isURL(),
 
     checkValidationError,
 
     async (req, res) => {
-        const { img } = req.body
+        const { imageUrl } = req.body
 
-        const { imgUrl, imgId } = await upload(img)
+        await knex("foodSliders").insert({ imageUrl })
 
-        await query("INSERT INTO food_sliders (imgUrl, imgId) VALUES (?, ?)", [imgUrl, imgId])
-
-        res.status(201).json({ message: "Slider created successfully" })
+        res.status(201).json({ success: "Slider created successfully" })
     }
 )
 
-router.delete(
-    "/:sliderId",
+router.delete("/:sliderId", async (req, res) => {
+    const { sliderId } = req.params
 
-    param("sliderId").isInt(),
+    await knex("foodSliders")
+        .where({ id: sliderId })
+        .del()
 
-    async (req, res) => {
-        const { sliderId } = req.params
-
-        const slider = await fetch("SELECT * FROM food_sliders WHERE id = ?", [sliderId])
-
-        if (!slider) {
-            return res.status(404).json({ message: "Slider not found" })
-        }
-
-        await destroy(slider.imgId)
-
-        await query("DELETE FROM food_sliders WHERE id = ?", [sliderId])
-
-        res.json({ message: "Slider deleted successfully" })
-    }
-)
+    res.json({ success: "Slider deleted successfully" })
+})
 
 export default router

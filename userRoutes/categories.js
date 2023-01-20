@@ -1,10 +1,11 @@
 import { Router } from "express"
-import { query } from "../database/connection.js"
+import knex from "../utils/database.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const categories = await query("SELECT * FROM food_categories")
+    const categories = await knex("foodCategories")
+    
     res.json(categories)
 })
 

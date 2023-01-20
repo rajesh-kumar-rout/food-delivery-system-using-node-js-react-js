@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { body } from "express-validator"
-import { query, fetch } from "../database/connection.js"
+import knex from "../utils/database.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
@@ -8,66 +8,115 @@ const router = Router()
 router.post(
     "/",
 
-    body("name")
-        .trim()
-        .isLength({ min: 2, max: 30 }),
+    body("name").trim().isLength({ max: 30 }),
 
-    body("mobile")
-        .isInt(),
+    body("mobile").isInt(),
 
-    body("street")
-        .trim()
-        .isLength({ min: 2, max: 30 }),
+    body("street").trim().isLength({ max: 30 }),
 
-    body("landmark")
-        .trim()
-        .isLength({ min: 2, max: 30 }),
+    body("landmark").trim().isLength({ max: 30 }),
 
     body("instruction")
         .optional()
         .trim()
-        .isLength({ min: 2, max: 255 })
+        .isLength({ max: 255 })
         .default(""),
 
     checkValidationError,
 
     async (req, res) => {
-        const { userId, cart } = req.session
+        const { currentUserId } = req
         const { name, mobile, street, landmark, instruction } = req.body
 
+        const cart = await knex("foodCart")
+            .where({ userId: currentUserId })
+            .join("foodFoods", "foodFoods.id", "foodCart.foodId")
+            .select(
+                "foodCart.qty",
+                "foodFoods.name",
+                "foodFoods.price"
+            )
+
         if (!cart?.length) {
-            return res.status(422).json({ message: "Your cart is empty" })
+            return res.status(422).json({ error: "Your cart is empty" })
         }
 
-        const { insertId } = await query("INSERT INTO food_orders (userId, orderStatusId) VALUES (?, ?)", [userId, 1])
+        const [orderId] = await knex("foodOrders").insert({
+            userId: currentUserId,
+            status: "Placed"
+        })
 
-        let totalPrice = 0
+        await knex("foodDeliveryAddresses").insert({
+            orderId,
+            name,
+            mobile,
+            street,
+            landmark,
+            instruction
+        })
+
+        let foodPrice = 0
 
         for (const cartItem of cart) {
-            const food = await fetch("SELECT * FROM food_foods WHERE id = ? LIMIT 1", [cartItem.id])
-      
-            await query("INSERT INTO food_ordered_foods (name, price, qty, orderId) VALUES (?, ?, ?, ?)", [food.name, food.price, cartItem.qty, insertId])
-            
-            totalPrice += food.price
+            await knex("foodOrderedFoods").insert({
+                orderId,
+                name: cartItem.name,
+                price: cartItem.price,
+                qty: cartItem.qty
+            })
+
+            foodPrice += cartItem.price
         }
 
-        const settings = await fetch("SELECT * FROM food_settings LIMIT 1")
+        const settings = await knex("foodSettings").first()
 
-        await query("INSERT INTO food_payment_details (totalPrice, gstPercentage, deliveryFee, orderId) VALUES (?, ?, ?, ?)", [totalPrice, settings.gstPercentage, settings.deliveryFee, insertId])
+        await knex("foodPaymentDetails").insert({
+            orderId,
+            foodPrice,
+            deliveryFee: settings.deliveryFee,
+            gstPercentage: settings.gstPercentage
+        })
 
-        await query("INSERT INTO food_delivery_address (name, mobile, street, landmark, instruction, orderId) VALUES (?, ?, ?, ?, ?, ?)", [name, mobile, street, landmark, instruction, insertId])
+        await knex("foodCart")
+            .where({ userId: currentUserId })
+            .del()
 
-        req.session.cart = []
-        req.session.save()
-
-        res.status(201).json({ message: "Order created successfully" })
+        res.status(201).json({ success: "Order created successfully" })
     }
 )
 
 router.get("/", async (req, res) => {
-    const { userId } = req.session
+    const { currentUserId } = req
 
-    const orders = await query("SELECT food_orders.id, (SELECT COUNT(food_ordered_foods.orderId) FROM food_ordered_foods WHERE food_ordered_foods.orderId = food_orders.id ) AS totalFoods, food_orders.createdAt, ( food_payment_details.totalPrice + food_payment_details.deliveryFee + ( food_payment_details.totalPrice * ( food_payment_details.gstPercentage / 100 ) ) ) AS totalPrice, food_order_statuses.name AS status FROM food_orders INNER JOIN food_order_statuses ON food_order_statuses.id = food_orders.orderStatusId INNER JOIN food_payment_details ON food_payment_details.orderId = food_orders.id WHERE food_orders.userId = ?", [userId])
+    const orders = await knex("foodOrders")
+        .where({ userId: currentUserId })
+        .select(
+            "foodOrders.id",
+            "foodOrders.status",
+            "foodOrders.createdAt",
+            "foodOrders.updatedAt",
+
+            knex("foodOrderedFoods")
+                .whereColumn("foodOrderedFoods.orderId", "foodOrders.id")
+                .count()
+                .as("totalFoods"),
+
+            knex("foodPaymentDetails")
+                .whereColumn("foodPaymentDetails.orderId", "foodOrders.id")
+                .select(knex.raw(`
+                    CAST(
+                        ROUND(
+                            foodPaymentDetails.foodPrice +
+                            foodPaymentDetails.deliveryFee + 
+                            foodPaymentDetails.foodPrice * (foodPaymentDetails.gstPercentage / 100)
+                        ) 
+                        AS INT
+                    )
+                `))
+                .first()
+                .as("totalAmount")
+        )
+        .orderBy("foodOrders.id", "desc")
 
     res.json(orders)
 })
@@ -76,19 +125,54 @@ router.get(
     "/:orderId",
 
     async (req, res) => {
-        const { userId } = req.session
+        const { currentUserId } = req
 
         const { orderId } = req.params
 
-        if (!fetch("SELECT 1 FROM food_orders WHERE id = ? AND userId = ? LIMIT 1", [orderId, userId])) {
-            return res.status(404).json({ message: "Order not found" })
+        const isOrderExists = await knex("foodOrders")
+            .where({ id: orderId })
+            .where({ userId: currentUserId })
+            .select(1)
+            .first()
+
+        if (!isOrderExists) {
+            return res.status(404).json({ error: "Order not found" })
         }
 
-        const foods = await query("SELECT id, name, price, qty FROM food_ordered_foods WHERE orderId = ?", [orderId])
+        const foods = await knex("foodOrderedFoods")
+            .where({ orderId })
+            .select(
+                "id",
+                "name",
+                "price",
+                "qty",
+            )
 
-        const deliveryAddress = await query("SELECT name, mobile, street, landmark, instruction FROM food_delivery_address WHERE orderId = ? LIMIT 1", [orderId])
+        const deliveryAddress = await knex("foodDeliveryAddresses")
+            .where({ orderId })
+            .select(
+                "id",
+                "name",
+                "mobile",
+                "street",
+                "landmark",
+                "instruction"
+            )
+            .first()
 
-        const paymentDetails = await query("SELECT totalPrice, gstPercentage, deliveryFee, (totalPrice * (gstPercentage / 100)) AS gstAmount FROM food_payment_details WHERE orderId = ?", [orderId])
+        const paymentDetails = await knex("foodPaymentDetails")
+            .where({ orderId })
+            .select(
+                "id",
+                "foodPrice",
+                "deliveryFee",
+                "gstPercentage"
+            )
+            .first()
+
+        paymentDetails.gstAmount = Math.round(paymentDetails.foodPrice * (paymentDetails.gstPercentage / 100))
+
+        paymentDetails.totalAmount = paymentDetails.foodPrice + paymentDetails.deliveryFee + paymentDetails.gstAmount
 
         res.json({
             foods,

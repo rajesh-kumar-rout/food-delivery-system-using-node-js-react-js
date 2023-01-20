@@ -1,115 +1,108 @@
 import { Router } from "express"
-import { body, param } from "express-validator"
-import { fetch } from "../database/connection.js"
+import { body } from "express-validator"
+import knex from "../utils/database.js"
 import { checkValidationError } from "../utils/validator.js"
-import { authenticate } from "../middlewares/authentication.js"
 
 const router = Router()
 
 router.post(
     "/",
 
-    body("id").isInt(),
+    body("foodId").isInt().toInt(),
 
-    body("qty").isInt(),
+    body("qty").isInt().toInt(),
 
     checkValidationError,
 
     async (req, res) => {
-        const { cart } = req.session
-        const { id, qty } = req.body
+        const { currentUserId } = req
+        const { foodId, qty } = req.body
 
-        let newCart = []
+        const isFoodExists = await knex("foodFoods")
+            .where({ id: foodId })
+            .select(1)
+            .first()
 
-        if (cart) {
-            newCart = [...cart]
+        if (!isFoodExists) {
+            return res.status(404).json({ error: "Food not found" })
         }
 
-        if (!await fetch("SELECT 1 FROM food_foods WHERE id = ? LIMIT 1", [id])) {
-            return res.status(404).json({ message: "Food not found" })
+        const isCartItemExists = await knex("foodCart")
+            .where({ userId: currentUserId })
+            .where({ foodId })
+            .select(1)
+            .first()
+
+        if (isCartItemExists) {
+            await knex("foodCart")
+                .where({ userId: currentUserId })
+                .where({ foodId })
+                .update({ qty })
+
+            return res.json({ success: "Cart updated" })
         }
 
-        const index = newCart.findIndex(cartItem => cartItem.id === id)
+        await knex("foodCart").insert({
+            foodId,
+            userId: currentUserId,
+            qty
+        })
 
-        if (index === -1) {
-            newCart.push({ id, qty })
-        } else {
-            newCart[index].qty = qty
-        }
-
-        req.session.cart = newCart
-        req.session.save()
-
-        res.json({ message: "Cart created" })
+        res.status(201).json({ success: "Cart created" })
     }
 )
 
 router.get("/pricing", async (req, res) => {
-    let { cart } = req.session
+    const { currentUserId } = req
 
-    if (!cart) {
-        cart = []
-    }
+    const { foodPrice } = await knex("foodCart")
+        .where({ userId: currentUserId })
+        .join("foodFoods", "foodFoods.id", "foodCart.foodId")
+        .select(knex.raw("CAST(SUM(foodFoods.price * foodCart.qty) AS INT) AS foodPrice"))
+        .first()
 
-    let totalPrice = 0
+    const settings = await knex("foodSettings").first()
+console.log(settings.gstPercentage);
+    const gstAmount = Math.round(foodPrice * (settings.gstPercentage / 100))
 
-    const { deliveryFee, gstPercentage } = await fetch("SELECT * FROM food_settings LIMIT 1")
-
-    for (const cartItem of cart) {
-        const { price } = await fetch("SELECT price FROM food_foods WHERE id = ? LIMIT 1", [cartItem.id])
-        totalPrice += price * cartItem.qty
-    }
-
-    const gstAmount = Math.round(totalPrice * (gstPercentage / 100))
-
-    const totalPayable = totalPrice + gstAmount + deliveryFee
+    const totalAmount = settings.deliveryFee + gstAmount + foodPrice
 
     res.json({
-        totalPrice,
-        deliveryFee,
-        gstPercentage,
+        foodPrice,
+        deliveryFee: settings.deliveryFee,
+        gstPercentage: settings.gstPercentage,
         gstAmount,
-        totalPayable
+        totalAmount
     })
 })
 
 router.get("/", async (req, res) => {
-    const { cart } = req.session
+    const { currentUserId } = req
 
-    const foods = []
-
-    for (const cartItem of cart) {
-        const food = await fetch("SELECT id, name, price, imgUrl FROM food_foods WHERE id = ? LIMIT 1", [cartItem.id])
-        foods.push({ ...food, qty: cartItem.qty })
-    }
+    const foods = await knex("foodCart")
+        .where({ userId: currentUserId })
+        .join("foodFoods", "foodFoods.id", "foodCart.foodId")
+        .select(
+            "foodCart.id",
+            "foodCart.qty",
+            "foodFoods.name",
+            "foodFoods.price",
+            "foodFoods.imageUrl"
+        )
 
     res.json(foods)
 })
 
-router.delete(
-    "/:id",
+router.delete("/:cartId", async (req, res) => {
+    const { currentUserId } = req
+    const { cartId } = req.params
 
-    param("id").isInt().toInt(),
+    await knex("foodCart")
+        .where({ userId: currentUserId })
+        .where({ id: cartId })
+        .del()
 
-    checkValidationError,
-
-    async (req, res) => {
-        const { id } = req.params
-        const { cart } = req.session
-
-        let newCart = []
-
-        if (cart) {
-            newCart = [...cart]
-        }
-
-        newCart = newCart.filter(cartItem => cartItem.id !== id)
-
-        req.session.cart = newCart
-        req.session.save()
-
-        res.json({ message: "Cart deleted successfully" })
-    }
-)
+    res.json({ success: "Cart item deleted successfully" })
+})
 
 export default router

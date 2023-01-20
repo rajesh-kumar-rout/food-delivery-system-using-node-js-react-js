@@ -1,20 +1,32 @@
 import express from "express"
-import { body, param } from "express-validator"
-import { query, fetch } from "../database/connection.js"
-import { destroy, upload } from "../utils/cloudinary.js"
-import { checkValidationError, isBase64Img } from "../utils/validator.js"
+import { body } from "express-validator"
+import knex from "../utils/database.js"
+import { checkValidationError } from "../utils/validator.js"
 
 const router = express.Router()
 
 router.get("/", async (req, res) => {
-    const foods = await query("SELECT id, name, price, isFeatured, isVegan, imgUrl, createdAt, updatedAt FROM food_foods")
+    const foods = await knex("foodFoods")
+        .select(
+            "id",
+            "name",
+            "price",
+            "isFeatured",
+            "isVegan",
+            "imageUrl",
+            "createdAt",
+            "updatedAt"
+        )
+
     res.json(foods)
 })
 
 router.get("/:foodId", async (req, res) => {
     const { foodId } = req.params
 
-    const food = await fetch("SELECT * FROM food_foods WHERE id = ? LIMIT 1", [foodId])
+    const food = await knex("foodFoods")
+        .where({ id: foodId })
+        .first()
 
     res.json(food)
 })
@@ -22,57 +34,58 @@ router.get("/:foodId", async (req, res) => {
 router.post(
     "/",
 
-    body("name")
-        .trim()
-        .isLength({ min: 2, max: 100 }),
+    body("name").trim().isLength({ max: 100 }),
 
-    body("price")
-        .isInt({ min: 0, max: 10000 })
-        .toInt(),
+    body("price").isInt({ max: 10000 }).toInt(),
 
-    body("isFeatured")
-        .isBoolean()
-        .toBoolean(),
+    body("isFeatured").isBoolean().toBoolean(),
 
-    body("isVegan")
-        .isBoolean()
-        .toBoolean(),
+    body("isVegan").isBoolean().toBoolean(),
 
-    body("categoryId")
-        .isInt()
-        .toInt(),
+    body("categoryId").isInt().toInt(),
 
-    body("img")
-        .isString()
-        .custom(isBase64Img),
+    body("imageUrl").isURL(),
 
     checkValidationError,
 
     async (req, res) => {
-        let { name, price, isFeatured, isVegan, categoryId, img } = req.body
+        const { name, price, isFeatured, isVegan, categoryId, imageUrl } = req.body
 
-        if (!await fetch("SELECT 1 FROM food_categories WHERE id = ? LIMIT 1", [categoryId])) {
-            return res.status(404).json({ message: "Category does not exists" })
+        const isCategoryExists = await knex("foodCategories")
+            .where({ id: categoryId })
+            .select(1)
+            .first()
+
+        if (!isCategoryExists) {
+            return res.status(404).json({ error: "Category does not exists" })
         }
 
-        if (await fetch("SELECT 1 FROM food_foods WHERE name = ? LIMIT 1", [name])) {
-            return res.status(409).json({ message: "Food already exists" })
+        const isFoodExists = await knex("foodFoods")
+            .where({ name })
+            .select(1)
+            .first()
+
+        if (isFoodExists) {
+            return res.status(409).json({ error: "Food already exists" })
         }
 
-        const { imgUrl, imgId } = await upload(img)
-        
-        await query("INSERT INTO food_foods (name, price, isFeatured, isVegan, categoryId, imgUrl, imgId) VALUES (?, ?, ?, ?, ?, ?, ?)", [name, price, isFeatured, isVegan, categoryId, imgUrl, imgId])
+        await knex("foodFoods").insert({
+            name,
+            price,
+            isVegan,
+            isFeatured,
+            categoryId,
+            imageUrl
+        })
 
-        res.status(201).json({ message: "Food created successfully" })
+        res.status(201).json({ success: "Food created successfully" })
     }
 )
 
 router.patch(
     "/:foodId",
 
-    body("name")
-        .trim()
-        .isLength({ min: 2, max: 100 }),
+    body("name").trim().isLength({ max: 100 }),
 
     body("price")
         .isInt()
@@ -89,69 +102,66 @@ router.patch(
         .toBoolean()
         .default(false),
 
-    body("categoryId")
-        .isInt()
-        .toInt(),
+    body("categoryId").isInt().toInt(),
 
-    body("img")
-        .optional()
-        .isString()
-        .custom(isBase64Img),
+    body("imageUrl").optional().isURL(),
 
     checkValidationError,
 
     async (req, res) => {
         const { foodId } = req.params
 
-        let { name, price, isFeatured, isVegan, categoryId, img } = req.body
+        let { name, price, isFeatured, isVegan, categoryId, imageUrl } = req.body
 
-        const food = await fetch("SELECT * FROM food_foods WHERE id = ? LIMIT 1", [foodId])
+        const food = await knex("foodFoods")
+            .where({ id: foodId })
+            .first()
 
         if (!food) {
-            return res.status(404).json({ message: "Food not found" })
+            return res.status(404).json({ error: "Food not found" })
         }
 
-        if (await fetch("SELECT 1 FROM food_foods WHERE name = ? AND id != ? LIMIT 1", [name, foodId])) {
-            return res.status(409).json({ message: "Food already exists" })
+        const isFoodExists = await knex("foodFoods")
+            .where({ name })
+            .whereNot({ id: foodId })
+            .select(1)
+            .first()
+
+        if (isFoodExists) {
+            return res.status(409).json({ error: "Food already exists" })
         }
 
-        if (!await fetch("SELECT 1 FROM food_categories WHERE id = ? LIMIT 1", [categoryId])) {
-            return res.status(404).json({ message: "Category does not exists" })
+        const isCategoryExists = await knex("foodCategories")
+            .where({ id: categoryId })
+            .select(1)
+            .first()
+        if (!isCategoryExists) {
+            return res.status(404).json({ error: "Category does not exists" })
         }
 
-        if (img) {
-            await destroy(food.imgId)
-            const { imgUrl, imgId } = await upload(img)
-            food.imgUrl = imgUrl
-            food.imgId = imgId
-        }
+        await knex("foodFoods")
+            .where({ id: foodId })
+            .update({
+                name,
+                price,
+                isVegan,
+                isFeatured,
+                categoryId,
+                imageUrl
+            })
 
-        await query("UPDATE food_foods SET name = ?, price = ?, isFeatured = ?, isVegan = ?, categoryId = ?, imgUrl = ?, imgId = ? WHERE id = ?", [name, price, isFeatured, isVegan, categoryId, food.imgUrl, food.imgId, foodId])
-
-        res.json({ message: "Food updated successfully" })
+        res.json({ success: "Food updated successfully" })
     }
 )
 
-router.delete(
-    "/:foodId",
+router.delete("/:foodId", async (req, res) => {
+    const { foodId } = req.params
 
-    param("foodId").isInt(),
+    await knex("foodFoods")
+        .where({ id: foodId })
+        .del()
 
-    async (req, res) => {
-        const { foodId } = req.params
-
-        const food = await fetch("SELECT * FROM food_foods WHERE id = ? LIMIT 1", [foodId])
-
-        if (!food) {
-            return res.status(404).json({ message: "Food not found" })
-        }
-
-        await destroy(food.imgId)
-
-        await query("DELETE FROM food_foods WHERE id = ?", [foodId])
-
-        res.json({ message: "Food deleted successfully" })
-    }
-)
+    res.json({ success: "Food deleted successfully" })
+})
 
 export default router

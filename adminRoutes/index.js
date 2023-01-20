@@ -1,10 +1,27 @@
 import { Router } from "express"
-import { fetch } from "../database/connection.js"
+import knex from "../utils/database.js"
 
 const router = Router()
 
 router.get("/analytics", async (req, res) => {
-    const data = await fetch("SELECT (SELECT COUNT(food_foods.id) FROM food_foods) AS totalFoods, (SELECT COUNT(food_categories.id) FROM food_categories) AS totalCategories, (SELECT COUNT(food_users.id) FROM food_users WHERE users.isDeliveryBoy = TRUE) AS totalDeliveryBoys, (SELECT COUNT(food_orders.id) FROM food_orders) AS totalOrders, (SELECT COUNT(food_users.id) FROM food_users) AS totalCustomers, (SELECT SUM(food_payment_details.totalPrice + food_payment_details.deliveryFee + (food_payment_details.totalPrice * (food_payment_details.gstPercentage / 100))) FROM food_payment_details) AS totalEarned")
+    const data = await knex("foodFoods")
+        .select(
+            knex.raw("COUNT(foodFoods.id) AS totalFoods"),
+
+            knex("foodCategories").count().as("totalCategories"),
+
+            knex("foodOrders").count().as("totalOrders"),
+
+            knex("foodOrders")
+                .where("foodOrders.status", "Preparing")
+                .count().as("totalPreparingOrders"),
+
+            knex("foodOrders")
+                .where("foodOrders.status", "Delivered")
+                .count().as("totalDeliveredOrders")
+        )
+        .first()
+
     res.json(data)
 })
 

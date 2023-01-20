@@ -1,23 +1,29 @@
+import bcrypt from "bcrypt"
+import crypto from "crypto"
 import { Router } from "express"
 import { body } from "express-validator"
-import { query, fetch } from "../database/connection.js"
+import { isAuthenticated } from "../middlewares/authentication.js"
+import knex from "../utils/database.js"
 import { checkValidationError } from "../utils/validator.js"
-import bcrypt from "bcrypt"
-import { authenticate } from "../middlewares/authentication.js"
-import crypto from "crypto"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const { userId } = req.session
+    const token = req.headers.authorization ?? null
 
-    const user = await fetch("SELECT id, name, email FROM food_users WHERE id = ? LIMIT 1", [userId])
+    const user = await knex("foodTokens")
+        .where({ token })
+        .join("foodUsers", "foodUsers.id", "foodTokens.userId")
+        .select(
+            "foodUsers.id",
+            "foodUsers.name",
+            "foodUsers.email",
+            "foodUsers.createdAt",
+            "foodUsers.updatedAt",
+        )
+        .first()
 
-    const csrfToken = crypto.randomUUID()
-    req.session.csrfToken = csrfToken
-    req.session.save()
-
-    res.cookie("XSRF-TOKEN", csrfToken).json(user)
+    res.json(user)
 })
 
 router.post(
@@ -32,26 +38,29 @@ router.post(
     async (req, res) => {
         const { email, password } = req.body
 
-        const user = await fetch("SELECT * FROM food_users WHERE email = ? LIMIT 1", [email])
+        const user = await knex("foodUsers")
+            .where({ email })
+            .first()
 
         if (!(user && await bcrypt.compare(password, user.password))) {
-            return res.status(422).json({ message: "Invalid email or password" })
+            return res.status(422).json({ error: "Invalid email or password" })
         }
 
-        req.session.userId = user.id
-        req.session.isAdmin = user.isAdmin
-        req.session.save()
+        const token = crypto.randomUUID()
 
-        res.json({ message: "Login successfull" })
+        await knex("foodTokens").insert({
+            userId: user.id,
+            token
+        })
+
+        res.json({ token })
     }
 )
 
 router.post(
     "/register",
 
-    body("name")
-        .trim()
-        .isLength({ min: 2, max: 30 }),
+    body("name").trim().isLength({ max: 30 }),
 
     body("email")
         .trim()
@@ -66,26 +75,38 @@ router.post(
     async (req, res) => {
         const { name, password, email } = req.body
 
-        if (await fetch("SELECT 1 FROM food_users WHERE email = ? LIMIT 1", [email])) {
-            return res.status(409).json({ message: "Email already exists" })
+        const isEmailExists = await knex("foodUsers")
+            .where({ email })
+            .select(1)
+            .first()
+
+        if (isEmailExists) {
+            return res.status(409).json({ error: "Email already exists" })
         }
 
-        const { insertId } = await query("INSERT INTO food_users (name, email, password) VALUES (?, ?, ?)", [name, email, await bcrypt.hash(password, 10)])
+        const [userId] = await knex("foodUsers").insert({
+            name,
+            email,
+            password: await bcrypt.hash(password, 10)
+        })
 
-        req.session.userId = insertId
+        const token = crypto.randomUUID()
 
-        res.json({ message: "Register successfull" })
+        await knex("foodTokens").insert({
+            userId,
+            token
+        })
+
+        res.json({ token })
     }
 )
 
 router.patch(
     "/edit-account",
 
-    authenticate,
+    isAuthenticated,
 
-    body("name")
-        .trim()
-        .isLength({ min: 2, max: 30 }),
+    body("name").trim().isLength({ max: 30 }),
 
     body("email")
         .isEmail()
@@ -97,18 +118,33 @@ router.patch(
     async (req, res) => {
         const { name, email } = req.body
 
-        const { userId } = req.session
+        const { currentUserId } = req
 
-        await query("UPDATE food_users SET name = ?, email = ? WHERE id = ?", [name, email, userId])
+        const isEmailExists = await knex("foodUsers")
+            .where({ email })
+            .whereNot({ id: currentUserId })
+            .select(1)
+            .first()
 
-        res.json({ message: "Account edited successfully" })
+        if (isEmailExists) {
+            return res.status(409).json({ error: "Email already exists" })
+        }
+
+        await knex("foodUsers")
+            .where({ id: currentUserId })
+            .update({
+                name,
+                email
+            })
+
+        res.json({ success: "Account edited successfully" })
     }
 )
 
 router.patch(
     "/change-password",
 
-    authenticate,
+    isAuthenticated,
 
     body("oldPassword").notEmpty(),
 
@@ -119,23 +155,34 @@ router.patch(
     async (req, res) => {
         const { oldPassword, newPassword } = req.body
 
-        const { userId } = req.session
+        const { currentUserId } = req
 
-        const user = await fetch("SELECT * FROM food_users WHERE id = ? LIMIT 1", [userId])
+        const user = await knex("foodUsers")
+            .where({ id: currentUserId })
+            .first()
 
         if (!await bcrypt.compare(oldPassword, user.password)) {
-            return res.status(422).json({ message: "Old password does not match" })
+            return res.status(422).json({ error: "Old password does not match" })
         }
 
-        await query("UPDATE food_users SET password = ? WHERE id = ?", [await bcrypt.hash(newPassword, 10), userId])
+        await knex("foodUsers")
+            .where({ id: currentUserId })
+            .update({
+                password: await bcrypt.hash(newPassword, 10)
+            })
 
-        res.json({ message: "Password changed successfully" })
+        res.json({ success: "Password changed successfully" })
     }
 )
 
-router.delete("/logout", authenticate, async (req, res) => {
-    req.session.destroy()
-    res.json({ message: "Logout successfully" })
+router.delete("/logout", isAuthenticated, async (req, res) => {
+    const token = req.headers.authorization ?? null
+
+    await knex("foodTokens")
+        .where({ token })
+        .del()
+
+    res.json({ success: "Logout successfully" })
 })
 
 export default router

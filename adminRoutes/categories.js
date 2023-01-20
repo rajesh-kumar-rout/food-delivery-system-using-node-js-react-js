@@ -1,39 +1,54 @@
 import { Router } from "express"
 import { body, param } from "express-validator"
-import { query, fetch } from "../database/connection.js"
-import { destroy, upload } from "../utils/cloudinary.js"
-import { checkValidationError, isBase64Img } from "../utils/validator.js"
+import { checkValidationError } from "../utils/validator.js"
+import knex from "../utils/database.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const categories = await query("SELECT id, name, imgUrl, updatedAt, (SELECT COUNT(food_foods.id) FROM food_foods WHERE food_foods.categoryId = food_categories.id) AS totalFoods FROM food_categories ORDER BY totalFoods")
+    const categories = await knex("foodCategories")
+        .select(
+            "foodCategories.id",
+            "foodCategories.name",
+            "foodCategories.imageUrl",
+            "foodCategories.createdAt",
+            "foodCategories.updatedAt",
+
+            knex("foodFoods")
+                .where("foodFoods.categoryId", "foodCategories.id")
+                .count()
+                .as("totalFoods")
+        )
+        .orderBy("totalFoods", "desc")
+
     res.json(categories)
 })
 
 router.post(
     "/",
 
-    body("name")
-        .trim()
-        .isLength({ min: 2, max: 30 }),
+    body("name").trim().isLength({ max: 30 }),
 
-    body("img")
-        .isString()
-        .custom(isBase64Img),
+    body("imageUrl").isURL(),
 
     checkValidationError,
 
     async (req, res) => {
-        const { name, img } = req.body
+        const { name, imageUrl } = req.body
 
-        if (await fetch("SELECT 1 FROM food_categories WHERE name = ?", [name])) {
+        const isCategoryExists = await knex("foodCategories")
+            .where({ name })
+            .select(1)
+            .first()
+
+        if (isCategoryExists) {
             return res.status(409).json({ message: "Category already exists" })
         }
 
-        const { imgUrl, imgId } = await upload(img)
-
-        await query("INSERT INTO food_categories (name, imgUrl, imgId) VALUES (?, ?, ?)", [name, imgUrl, imgId])
+        await knex("foodCategories").insert({
+            name,
+            imageUrl
+        })
 
         res.status(201).json({ message: "Category created successfully" })
     }
@@ -44,62 +59,51 @@ router.patch(
 
     param("categoryId").isInt(),
 
-    body("name")
-        .trim()
-        .isLength({ min: 2, max: 30 }),
+    body("name").trim().isLength({ max: 30 }),
 
-    body("img")
-        .optional()
-        .isBase64()
-        .custom(isBase64Img),
+    body("imageUrl").optional().isURL(),
 
     async (req, res) => {
         const { categoryId } = req.params
-        const { name, img } = req.body
+        const { name, imageUrl } = req.body
 
-        if (await fetch("SELECT 1 FROM food_categories WHERE id != ? AND name = ?", [categoryId, name])) {
-            return res.status(409).json({ message: "Category already taken" })
-        }
-
-        const category = await fetch("SELECT * FROM food_categories WHERE id = ?", [categoryId])
+        const category = await knex("foodCategories")
+            .where({ id: categoryId })
+            .first()
 
         if (!category) {
             return res.status(404).json({ message: "Category not found" })
         }
 
-        if (img) {
-            await destroy(category.imgId)
-            const { imgUrl, imgId } = await upload(img)
-            category.imgUrl = imgUrl
-            category.imgId = imgId
+        const isCategoryExists = await knex("foodCategories")
+            .where({ name })
+            .whereNot({ id: categoryId })
+            .select(1)
+            .first()
+
+        if (isCategoryExists) {
+            return res.status(409).json({ message: "Category already exists" })
         }
 
-        await query("UPDATE food_categories SET name = ?, imgUrl = ?, imgId = ? WHERE id = ?", [name, category.imgUrl, category.imgId, categoryId])
+        await knex("foodCategories")
+            .where({ id: categoryId })
+            .update({
+                name,
+                imageUrl
+            })
 
         res.json({ message: "Category edited successfully" })
     }
 )
 
-router.delete(
-    "/:categoryId",
+router.delete("/:categoryId", async (req, res) => {
+    const { categoryId } = req.params
 
-    param("categoryId").isInt(),
+    await knex("foodCategories")
+        .where({ id: categoryId })
+        .del()
 
-    async (req, res) => {
-        const { categoryId } = req.params
-
-        const category = await fetch("SELECT * FROM food_categories WHERE id = ?", [categoryId])
-
-        if (!category) {
-            return res.status(404).json({ message: "Category not found" })
-        }
-
-        await destroy(category.imgId)
-
-        await query("DELETE FROM food_categories WHERE id = ?", [categoryId])
-
-        res.json({ message: "Category deleted successfully" })
-    }
-)
+    res.json({ message: "Category deleted successfully" })
+})
 
 export default router
