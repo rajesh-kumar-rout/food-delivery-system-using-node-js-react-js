@@ -14,11 +14,17 @@ router.get("/analytics", async (req, res) => {
 
             knex("foodOrders")
                 .where("foodOrders.status", "Preparing")
+                .count().as("totalPreparedOrders"),
+
+            knex("foodOrders")
+                .where("foodOrders.status", "Preparing")
                 .count().as("totalPreparingOrders"),
 
             knex("foodOrders")
                 .where("foodOrders.status", "Delivered")
-                .count().as("totalDeliveredOrders")
+                .count().as("totalDeliveredOrders"),
+
+            knex("foodUsers").count().as("totalCustomers")
         )
         .first()
 

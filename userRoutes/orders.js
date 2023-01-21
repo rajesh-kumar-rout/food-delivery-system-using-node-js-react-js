@@ -81,7 +81,7 @@ router.post(
             .where({ userId: currentUserId })
             .del()
 
-        res.status(201).json({ success: "Order created successfully" })
+        res.status(201).json({ orderId })
     }
 )
 

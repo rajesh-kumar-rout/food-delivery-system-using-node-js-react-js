@@ -18,23 +18,17 @@ router.get("/featured", async (req, res) => {
 })
 
 router.get("/", async (req, res) => {
-    const searchParam = req.query.search ?? null
-
-    const query = knex("foodFoods")
+    const foods = await knex("foodFoods")
+        .join("foodCategories", "foodCategories.id", "foodFoods.categoryId")
         .select(
-            "id",
-            "name",
-            "imageUrl",
-            "price",
-            "isVegan"
+            "foodFoods.id",
+            "foodFoods.name",
+            "foodFoods.imageUrl",
+            "foodFoods.price",
+            "foodFoods.isVegan",
+            "foodCategories.name AS category"
         )
         .orderBy("id", "desc")
-
-    searchParam?.split(" ").forEach(part => {
-        query.orWhere("name", "like", `%${part}%`)
-    })
-
-    const foods = await query
 
     res.json(foods)
 })

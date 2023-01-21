@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
             "foodUsers.id",
             "foodUsers.name",
             "foodUsers.email",
+            "foodUsers.isAdmin",
             "foodUsers.createdAt",
             "foodUsers.updatedAt",
         )

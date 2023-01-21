@@ -83,7 +83,7 @@ router.get("/", async (req, res) => {
         .where({ userId: currentUserId })
         .join("foodFoods", "foodFoods.id", "foodCart.foodId")
         .select(
-            "foodCart.id",
+            "foodCart.foodId",
             "foodCart.qty",
             "foodFoods.name",
             "foodFoods.price",
@@ -93,16 +93,16 @@ router.get("/", async (req, res) => {
     res.json(foods)
 })
 
-router.delete("/:cartId", async (req, res) => {
+router.delete("/:foodId", async (req, res) => {
     const { currentUserId } = req
-    const { cartId } = req.params
+    const { foodId } = req.params
 
     await knex("foodCart")
         .where({ userId: currentUserId })
-        .where({ id: cartId })
+        .where({ foodId })
         .del()
 
-    res.json({ success: "Cart item deleted successfully" })
+    res.json({ success: "Food removed from cart successfully" })
 })
 
 export default router
