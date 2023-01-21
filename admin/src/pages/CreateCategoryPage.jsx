@@ -1,9 +1,7 @@
-import { postData } from "../utils/fetcher"
-import { Formik, Form, ErrorMessage, Field } from "formik"
+import axios from "../utils/axios"
+import { ErrorMessage, Field, Form, Formik } from "formik"
+import { toast } from "react-toastify"
 import * as yup from "yup"
-import { useRef } from "react"
-import { getFormData } from "../utils/functions"
-import {toast} from "react-toastify"
 
 const schema = yup.object().shape({
     name: yup.string()
@@ -14,20 +12,19 @@ const schema = yup.object().shape({
 })
 
 export default function CreateCategoryPage() {
-    const imgRef = useRef()
 
-    const handleSubmit = async (values, { resetForm, setSubmitting, setErrors }) => {
+    const handleSubmit = async (values, { resetForm, setSubmitting }) => {
         setSubmitting(true)
 
-        const { status } = await postData("/categories", getFormData(values))
+        try {
+            await axios.post("/categories", values)
 
-        if (status === 201) {
             resetForm()
-            imgRef.current.value = ""
+            
             toast.success("Category created successfully")
-        }
 
-        if (status === 409) {
+        } catch ({ response }) {
+            
             toast.error("Category already exists")
         }
 
@@ -38,12 +35,12 @@ export default function CreateCategoryPage() {
         <Formik
             initialValues={{
                 name: "",
-                img: null
+                imageUrl: ""
             }}
             validationSchema={schema}
             onSubmit={handleSubmit}
         >
-            {({ values, isSubmitting, setFieldValue, handleBlur }) => (
+            {({ isSubmitting }) => (
                 <Form className="card form">
                     <h2 className="card-header card-header-title">Create Category</h2>
 
@@ -60,19 +57,13 @@ export default function CreateCategoryPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="img" className="form-label">Image</label>
-                            <input
-                                type="file"
-                                id="img"
+                            <label htmlFor="img" className="form-label">Image Url</label>
+                            <Field
+                                type="text"
+                                id="imageUrl"
                                 className="form-control"
-                                name="img"
-                                onChange={e => setFieldValue("img", e.target.files[0])}
-                                onBlur={handleBlur}
-                                accept=".jpg, .jpeg, .png"
-                                required
-                                ref={imgRef}
+                                name="imageUrl"
                             />
-                            {values.img && <img className="form-img-preview" src={URL.createObjectURL(values.img)} />}
                         </div>
 
                         <button

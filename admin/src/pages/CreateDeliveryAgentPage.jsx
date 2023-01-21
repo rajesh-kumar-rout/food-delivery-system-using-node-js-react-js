@@ -1,21 +1,28 @@
 import { useState } from "react"
-import { postData } from "../utils/fetcher"
+import { toast } from "react-toastify"
+import axios from "../utils/axios"
 
-export default function CreateDelveryBoyPage() {
+export default function CreateDelveryAgentPage() {
     const [isSubmitting, setSubmitting] = useState(false)
     const [email, setEmail] = useState("")
 
-    const handleSubmit = async e => {
-        e.preventDefault()
+    const handleSubmit = async event => {
+        event.preventDefault()
 
         setSubmitting(true)
-        const { status } = await postData("/delivery-boys", { email })
-        if(status === 404){
-            alert("Account boy not found")
-        }else{
-            alert("Delivery boy added successfully")
+        
+        try {
+            await axios.post("/delivery-agents", { email })
+            
+            toast.success("Delivery boy added successfully")
+
             setEmail("")
+
+        } catch ({ response }) {
+            
+            response.status === 404 && toast.error("User not found")
         }
+
         setSubmitting(false)
     }
 

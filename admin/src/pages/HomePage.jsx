@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react"
-import { MdEdit, MdDelete } from "react-icons/md"
-import { Link } from "react-router-dom"
 import Loader from "../components/Loader"
-import { deleteData, getData } from "../utils/fetcher"
+import axios from "../utils/axios"
 
 export default function HomePage() {
     const [data, setData] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchData = async () => {
-        const { data } = await getData("/analytics")
+        const { data } = await axios.get("/analytics")
+
         setData(data)
+
         setIsLoading(false)
     }
 

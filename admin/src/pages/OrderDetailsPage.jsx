@@ -1,45 +1,53 @@
-import { useEffect } from "react"
-import { useState } from "react"
+import axios from "axios"
+import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { getData, patchData } from "../utils/fetcher"
+import Loader from "../components/Loader"
 
 export default function OrderDetailsPage() {
     const { orderId } = useParams()
-    const [deliveryAddress, setDeliveryAddress] = useState({})
-    const [paymentDetails, setPaymentDetails] = useState({})
-    const [statuses, setStatuses] = useState([])
-    const [deliveryBoys, setDeliveryBoys] = useState([])
-    const [foods, setFoods] = useState([])
+
+    const [deliveryAgents, setDeliveryAgents] = useState([])
+
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
+
+    const [isLoading, setIsLoading] = useState(true)
+
     const [order, setOrder] = useState({})
-    const [deliveryBoyId, setDeliveryBoyId] = useState()
-    const [orderStatusId, setOrderStatusId] = useState()
+
+    const [deliveryAgentId, setDeliveryAgentId] = useState()
+
+    const [status, setStatus] = useState("")
+
+    const { foods, deliveryAddress, paymentDetails } = order
 
     useEffect(() => {
-        setDeliveryBoyId(order.deliveryBoyId)
-        setOrderStatusId(order.orderStatusId)
+        setDeliveryAgentId(order?.order?.deliveryAgentId)
+        setStatus(order.order?.status)
     }, [order])
 
     const fetchDetails = async () => {
-        setIsLoading(true)
-        const { data } = await getData("/orders/" + orderId)
-        const { data: statuses } = await getData("/orders/statuses")
-        const { data: deliveryBoys } = await getData("/delivery-boys")
-        setOrder(data.order)
-        setDeliveryBoys(deliveryBoys)
-        setStatuses(statuses)
-        setDeliveryAddress(data.deliveryAddress)
-        setPaymentDetails(data.paymentDetails)
-        setFoods(data.orderedFoods)
+        const [ordersRes, deliveryAgentsRes] = await Promise.all([
+            axios.get(`/orders/${orderId}`),
+            axios.get("/delivery-agents")
+        ])
+
+        setOrder(ordersRes.data)
+
+        setDeliveryAgents(deliveryAgentsRes.data)
+
         setIsLoading(false)
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
+    const handleSubmit = async (event) => {
+        event.preventDefault()
 
         setIsSubmitting(true)
-        const { data } = await patchData("/orders/" + orderId, { deliveryBoyId, orderStatusId })
+
+        await axios.patch(`/orders/${orderId}`, {
+            deliveryAgentId,
+            status
+        })
+
         setIsSubmitting(false)
     }
 
@@ -47,13 +55,19 @@ export default function OrderDetailsPage() {
         fetchDetails()
     }, [])
 
+    if(isLoading) {
+        return <Loader/>
+    }
+// console.log(order);
+// console.log(status);
+// return <div></div>
     return (
         <div className="order-details">
             <div className="card order-details-card">
                 <h4 className="card-header card-title">Foods</h4>
                 <div className="card-body order-details-body">
                     {foods.map(food => (
-                        <p>{food.food} ({food.option}) &times; {food.qty}</p>
+                        <p>{food.name} &times; {food.qty}</p>
                     ))}
                 </div>
             </div>
@@ -72,10 +86,10 @@ export default function OrderDetailsPage() {
             <div className="card order-details-card">
                 <h4 className="card-header card-title">Payment Details</h4>
                 <div className="card-body order-details-body">
-                    <p>Transaction ID : 3058675</p>
-                    <p>Paid : {paymentDetails.amount}</p>
-                    <p>Gst : {paymentDetails.gst}%</p>
+                    <p>Food Price : {paymentDetails.foodPrice}</p>
+                    <p>Gst : {paymentDetails.gstPercentage}%</p>
                     <p>Delivery Fee : {paymentDetails.deliveryFee}</p>
+                    <p>Total Amount : {paymentDetails.totalAmount}</p>
                 </div>
             </div>
 
@@ -84,17 +98,16 @@ export default function OrderDetailsPage() {
 
                 <form className="card-body" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="deliveryBoy" className="form-label">Delivery Boy</label>
+                        <label htmlFor="deliveryBoyId" className="form-label">Delivery Boy</label>
                         <select
-                            id="deliveryBoy"
+                            id="deliveryBoyId"
                             name="deliveryBoyId"
                             className="form-control"
-                            value={deliveryBoyId}
+                            value={deliveryAgentId}
+                            onChange={event => setDeliveryAgentId(event.target.value)}
                             required
-                            onChange={e => setDeliveryBoyId(e.target.value)}
                         >
-                            <option></option>
-                            {deliveryBoys.map(deliveryBoy => (
+                            {deliveryAgents.map(deliveryBoy => (
                                 <option value={deliveryBoy.id}>{deliveryBoy.name}</option>
                             ))}
                         </select>
@@ -106,18 +119,21 @@ export default function OrderDetailsPage() {
                             id="status"
                             name="status"
                             className="form-control"
-                            value={orderStatusId}
-                            onChange={e => setOrderStatusId(e.target.value)}
+                            value={status}
+                            onChange={event => setStatus(event.target.value)}
                             required
                         >
                             <option></option>
-                            {statuses.map(status => (
-                                <option value={status.id}>{status.name}</option>
-                            ))}
+                            <option value="Placed">Placed</option>
+                            <option value="Preparing">Preparing</option>
+                            <option value="Preparing">Preparing</option>
+                            <option value="Canceled">Canceled</option>
+                            <option value="Delivered">Delivered</option>
                         </select>
                     </div>
 
                     <button
+                        type="submit"
                         disabled={isSubmitting}
                         className="btn btn-primary"
                     >

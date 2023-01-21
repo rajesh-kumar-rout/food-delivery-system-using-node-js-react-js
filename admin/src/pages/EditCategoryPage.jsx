@@ -1,9 +1,8 @@
-import { patchData } from "../utils/fetcher"
-import { Formik, Form, ErrorMessage, Field } from "formik"
-import * as yup from "yup"
-import { useRef } from "react"
-import { getFormData } from "../utils/functions"
+import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useLocation } from "react-router-dom"
+import { toast } from "react-toastify"
+import * as yup from "yup"
+import axios from "../utils/axios"
 
 const schema = yup.object().shape({
     name: yup.string()
@@ -15,16 +14,22 @@ const schema = yup.object().shape({
 
 export default function EditCategoryPage() {
     const { state } = useLocation()
-    const imgRef = useRef()
 
-    const handleSubmit = async (values, { resetForm, setSubmitting, setErrors }) => {
+    const handleSubmit = async (values, { resetForm, setSubmitting }) => {
         setSubmitting(true)
-        const { status } = await patchData(`/categories/${state.id}`, getFormData(values))
-        if (status === 409) {
-            setErrors({ name: "Category already exists" })
-        } else {
-            imgRef.current.value = ""
+
+        try {
+            await axios.patch(`/categories/${state.id}`, values)
+
+            toast.success("Category updated")
+
+            resetForm()
+
+        } catch ({ response }) {
+            
+            response?.status === 409 && toast.error("Category already exists")
         }
+
         setSubmitting(false)
     }
 
@@ -51,22 +56,13 @@ export default function EditCategoryPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="img" className="form-label">Image</label>
-                            <input
-                                type="file"
-                                id="img"
+                            <label htmlFor="imageUrl" className="form-label">Image</label>
+                            <Field
+                                type="text"
+                                id="imageUrl"
                                 className="form-control"
-                                name="img"
-                                onChange={e => setFieldValue("img", e.target.files[0])}
-                                onBlur={handleBlur}
-                                accept=".jpg, .jpeg, .png"
-                                ref={imgRef}
+                                name="imageUrl"
                             />
-                            {values.img ? (
-                                <img className="form-img-preview" src={URL.createObjectURL(values.img)} />
-                            ) : (
-                                <img className="form-img-preview" src={values.imgUrl} />
-                            )}
                         </div>
 
                         <button

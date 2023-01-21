@@ -1,28 +1,41 @@
-import { useEffect } from "react"
-import { useState } from "react"
-import { MdEdit, MdDelete, MdAdd, MdCheckCircle, MdClose } from "react-icons/md"
+import { useEffect, useState } from "react"
+import { MdCheckCircle, MdClose, MdDelete, MdEdit } from "react-icons/md"
 import { Link } from "react-router-dom"
-import { deleteData, getData } from "../utils/fetcher"
+import { toast } from "react-toastify"
+import swal from "sweetalert"
+import axios from "../utils/axios"
 
 export default function FoodsPage() {
     const [foods, setFoods] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchFoods = async () => {
-        const { data } = await getData("/foods")
-        console.log(data);
+        const { data } = await axios.get("/foods")
+
         setFoods(data)
+
         setIsLoading(false)
-        // setCategories(data)
-        // setLoading(false)
     }
 
-    const deleteFood = async (foodId) => {
-        if(!window.confirm("Are you sure you want to delete ?")) return
+    const handleDeleteFood = async (foodId) => {
+        const willDelete = await swal({
+            title: "Are you sure?",
+            text: "Are you sure you want to delete?. This action can not be undone",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+
+        if (!willDelete) return
 
         setIsLoading(true)
-        await deleteData(`/foods/${foodId}`)
+
+        await axios.delete(`/foods/${foodId}`)
+
+        toast.success("Food deleted")
+
         setFoods(foods.filter(food => food.id !== foodId))
+
         setIsLoading(false)
     }
 
@@ -58,7 +71,7 @@ export default function FoodsPage() {
                                 <td>{food.name}</td>
                                 <td>{food.price}</td>
                                 <td>
-                                    <img className="table-img" src={food.imgUrl} />
+                                    <img className="table-img" src={food.imageUrl} />
                                 </td>
                                 <td>{food.updatedAt}</td>
                                 <td>
@@ -83,7 +96,7 @@ export default function FoodsPage() {
                                         <MdEdit size={24} />
                                     </Link>
 
-                                    <button className="btn btn-icon btn-danger ml-1" onClick={() => deleteFood(food.id)}>
+                                    <button className="btn btn-icon btn-danger ml-1" onClick={() => handleDeleteFood(food.id)}>
                                         <MdDelete size={24} />
                                     </button>
                                 </td>

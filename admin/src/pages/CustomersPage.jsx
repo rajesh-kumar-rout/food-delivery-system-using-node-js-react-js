@@ -1,13 +1,13 @@
 import { useEffect } from "react"
 import { useState } from "react"
-import { getData } from "../utils/fetcher"
+import axios from "../utils/axios"
 
 export default function CustomersPage() {
     const [customeres, setCustomers] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
     const fetchCustomers = async () => {
-        const { data } = await getData("/customers")
+        const { data } = await axios.get("/customers")
         setCustomers(data)
     }
 

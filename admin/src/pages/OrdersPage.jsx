@@ -1,17 +1,18 @@
-import { useState } from "react"
-import { useEffect } from "react"
-import { MdEdit, MdDelete, MdVisibility, MdArrowBackIos, MdArrowForward, MdArrowBack, MdAdd } from "react-icons/md"
+import { useEffect, useState } from "react"
+import { MdVisibility } from "react-icons/md"
 import { Link } from "react-router-dom"
 import Loader from "../components/Loader"
-import { getData } from "../utils/fetcher"
+import axios from "../utils/axios"
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchOrders = async () => {
-        const { data } = await getData("/orders")
-        setOrders(data.orders)
+        const { data } = await axios.get("/orders")
+
+        setOrders(data)
+
         setIsLoading(false)
     }
 
@@ -30,9 +31,9 @@ export default function OrdersPage() {
                 <table className="min-w-700">
                     <thead>
                         <tr>
-                            <th>Tracking ID</th>
+                            <th>Order ID</th>
                             <th>Mobile</th>
-                            <th>Amount Paid</th>
+                            <th>Total Amount</th>
                             <th>Status</th>
                             <th>Placed At</th>
                             <th>View</th>
@@ -40,16 +41,16 @@ export default function OrdersPage() {
                     </thead>
                     <tbody>
                         {orders.map(order => (
-                            <tr key={order.trackingId}>
-                                <td>{order.trackingId}</td>
+                            <tr key={order.id}>
+                                <td>{order.id}</td>
                                 <td>{order.mobile}</td>
-                                <td>{order.amountPayable}</td>
+                                <td>{order.totalAmount}</td>
                                 <td>
                                     <span>{order.status}</span>
                                 </td>
-                                <td>{order.placedAt}</td>
+                                <td>{order.createdAt}</td>
                                 <td>
-                                    <Link className="btn btn-icon btn-primary" to={`/orders/${order.trackingId}`}>
+                                    <Link className="btn btn-icon btn-primary" to={`/orders/${order.id}`}>
                                         <MdVisibility size={24} />
                                     </Link>
                                 </td>

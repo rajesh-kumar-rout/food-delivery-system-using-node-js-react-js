@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { MdHome, MdRestaurantMenu, MdReorder, MdPerson, MdPhotoLibrary, MdPeople, MdArrowDropDown, MdLogout, MdSettings } from "react-icons/md"
-import CustomLink from "./CustomLink"
+import Navigation from "./Navigation"
 
 export default function SideBar({ show, onNavigate }) {
     const [menus, setMenus] = useState([
@@ -58,17 +58,17 @@ export default function SideBar({ show, onNavigate }) {
             ]
         },
         {
-            link: "/delivery-boys",
-            name: "Delivery Boy",
+            link: "/delivery-agents",
+            name: "Delivery Agent",
             icon: <MdPerson size={24} />,
             showSubMenus: false,
             subMenus: [
                 {
-                    link: "/delivery-boys/create",
+                    link: "/delivery-agents/create",
                     name: "Create New"
                 },
                 {
-                    link: "/delivery-boys",
+                    link: "/delivery-agents",
                     name: "List All"
                 }
             ]
@@ -95,7 +95,7 @@ export default function SideBar({ show, onNavigate }) {
         },
     ])
 
-    const openSubMenus = (e, selectedIndex) => {
+    const handleMenuClick = (e, selectedIndex) => {
         e.preventDefault()
         setMenus(menus.map((menu, index) => ({
             ...menu,
@@ -107,9 +107,9 @@ export default function SideBar({ show, onNavigate }) {
         <div className="sidebar" data-show={show}>
             {menus.map((menu, index) => (
                 <>
-                    <CustomLink
+                    <Navigation
                         to={menu.link}
-                        onClick={(e) => menu.subMenus ? openSubMenus(e, index) : onNavigate()}
+                        onClick={(e) => menu.subMenus ? handleMenuClick(e, index) : onNavigate()}
                         className="sidebar-nav-link"
                         activeClass="active"
                         key={index}
@@ -119,10 +119,10 @@ export default function SideBar({ show, onNavigate }) {
                             <p>{menu.name}</p>
                             {menu.subMenus && <MdArrowDropDown size={24} />}
                         </div>
-                    </CustomLink>
+                    </Navigation>
 
                     {menu.showSubMenus && menu.subMenus?.map((subMenu, index) => (
-                        <CustomLink
+                        <Navigation
                             end
                             to={subMenu.link}
                             onClick={onNavigate}
@@ -131,7 +131,7 @@ export default function SideBar({ show, onNavigate }) {
                             key={index}
                         >
                             <p>{subMenu.name}</p>
-                        </CustomLink>
+                        </Navigation>
                     ))}
                 </>
             ))}

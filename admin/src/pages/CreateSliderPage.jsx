@@ -1,25 +1,25 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
-import { postData } from "../utils/fetcher"
-import { getFileForm } from "../utils/functions"
+import axios from "../utils/axios"
 
 export default function CreateSliderPage() {
-    const [img, setImg] = useState(null)
+    const [imageUrl, setImageUrl] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const handleSubmit = async e => {
-        e.preventDefault()
+    const handleSubmit = async event => {
+        event.preventDefault()
 
         setIsSubmitting(true)
 
-        const { status } = await postData("/sliders", getFileForm("img", img))
+        await axios.post("/sliders", {imageUrl})
 
-        if (status === 201) {
-            e.target.reset()
-            setImg(null)
-            setIsSubmitting(false)
-            toast.success("Slider created successfully")
-        }
+        event.target.reset()
+
+        setImageUrl("")
+
+        setIsSubmitting(false)
+
+        toast.success("Slider created successfully")
     }
 
     return (
@@ -28,17 +28,15 @@ export default function CreateSliderPage() {
 
             <div className="card-body">
                 <div className="form-group">
-                    <label htmlFor="img" className="form-label">Image</label>
+                    <label htmlFor="imageUrl" className="form-label">Image</label>
                     <input
-                        type="file"
-                        id="img"
+                        type="text"
+                        id="imageUrl"
                         className="form-control"
-                        name="img"
-                        onChange={e => setImg(e.target.files[0])}
+                        name="imageUrl"
+                        onChange={event => setImageUrl(event.target.value)}
                         required
-                        accept=".jpg, .jpeg, .png"
                     />
-                    {img && <img className="form-img-preview" src={URL.createObjectURL(img)} />}
                 </div>
 
                 <button

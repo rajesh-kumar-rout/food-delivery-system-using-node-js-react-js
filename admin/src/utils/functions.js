@@ -1,16 +1,31 @@
-export const getFormData = (values) => {
-    const formData = new FormData()
+export const handleImage = async (event, setFieldValue) => {
+    const file = event.target.files[0]
 
-    for (const key in values) {
-        const value = Array.isArray(values[key]) ? JSON.stringify(values[key]) : values[key]
-        formData.append(key, value)
+    if(file.size > 300000) {
+        return event.target.setCustomValidity("File must be within 3kb")
     }
 
-    return formData
+    event.target.setCustomValidity("")
+
+    const reader = new FileReader()
+    
+    reader.readAsDataURL(file)
+
+    reader.onload = () => {
+        setFieldValue(event.target.name, reader.result)
+    }
 }
 
-export const getFileForm = (name, file) => {
-    const formData = new FormData()
-    formData.append(name, file)
-    return formData
+export const getBase64 = async (file) => {
+    if(!file) return ""
+    
+    const reader = new FileReader()
+    
+    reader.readAsDataURL(file)
+
+    return new Promise((resolve, reject) => {
+        reader.onload = () => {
+            resolve(reader.result)
+        }
+    })
 }

@@ -1,16 +1,17 @@
-import { useEffect } from "react"
-import { useState } from "react"
+import axios from "../utils/axios"
+import { useEffect, useState } from "react"
 import { MdEdit } from "react-icons/md"
 import { Link } from "react-router-dom"
-import { getData } from "../utils/fetcher"
 
 export default function SettingsPage() {
-    const [settings, setSettings] = useState([])
+    const [settings, setSettings] = useState({})
     const [isLoading, setIsLoading] = useState(false)
 
     const fetchSettings = async () => {
-        const { data } = await getData("/settings")
+        const { data } = await axios.get("/settings")
+
         setSettings(data)
+
         setIsLoading(false)
     }
 
@@ -29,29 +30,26 @@ export default function SettingsPage() {
                 <table className="min-w-700">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Value</th>
+                            <th>Delivery Fee</th>
+                            <th>Gst Percentage</th>
                             <th>Last Updated</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {settings.map(setting => (
-                            <tr>
-                                <td>{setting.name}</td>
-                                <td>{setting.value}</td>
-                                <td>{setting.updatedAt}</td>
-                                <td>
-                                    <Link
-                                        to="/settings/edit"
-                                        state={setting}
-                                        className="btn btn-icon btn-primary"
-                                    >
-                                        <MdEdit size={24} />
-                                    </Link>
-                                </td>
-                            </tr>
-                        ))}
+                        <tr>
+                            <td>{settings.deliveryFee}</td>
+                            <td>{settings.gstPercentage}</td>
+                            <td>{settings.updatedAt}</td>
+                            <td>
+                                <Link
+                                    to="/settings/edit"
+                                    className="btn btn-icon btn-primary"
+                                >
+                                    <MdEdit size={24} />
+                                </Link>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

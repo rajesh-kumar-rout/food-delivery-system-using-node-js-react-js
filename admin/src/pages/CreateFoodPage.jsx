@@ -1,12 +1,8 @@
-import { useState } from "react"
-import { MdClose } from "react-icons/md"
-import { useEffect } from "react"
-import { getData, postData } from "../utils/fetcher"
-import { Formik, Form, Field, ErrorMessage, FieldArray, getIn } from 'formik'
+import { ErrorMessage, Field, Form, Formik } from 'formik'
+import { useEffect, useRef, useState } from "react"
+import { toast } from "react-toastify"
 import * as yup from 'yup'
-import { getFormData } from "../utils/functions"
-import { useRef } from "react"
-import ArrayErrorMessage from "../components/ArrayErrorMessage"
+import axios from "../utils/axios"
 
 const schema = yup.object().shape({
     name: yup.string()
@@ -21,25 +17,8 @@ const schema = yup.object().shape({
         .positive()
         .integer(),
 
-    desc: yup.string()
-        .optional()
-        .min(2, "Desc must be at least 2 character")
-        .max(255, "Desc must be within 255 characters"),
-
     categoryId: yup.number()
-        .required("Please select a category"),
-
-    ingredients: yup.string()
-        .required("Ingredient is required")
-        .min(2, "Ingredient must be at least 2 character")
-        .max(255, "Ingredient must be within 255 characters"),
-
-    options: yup.array().of(
-        yup.object().shape({
-            name: yup.string().required("Name is required"),
-            price: yup.number().typeError("Price is required").positive().required("Price is required")
-        })
-    )
+        .required("Please select a category")
 })
 
 export default function CreateFoodPage() {
@@ -48,22 +27,28 @@ export default function CreateFoodPage() {
     const imgRef = useRef()
 
     const fetchCategories = async () => {
-        const { data } = await getData("/categories")
+        const { data } = await axios.get("/categories")
+
         setCategories(data)
+
         setIsLoading(false)
     }
 
-    const handleSubmit = async (values, { setSubmitting, resetForm, setErrors }) => {
+    const handleSubmit = async (values, { setSubmitting, resetForm }) => {
         setSubmitting(true)
-        const { status, data } = await postData("/foods", getFormData(values))
-        if (status === 409) {
-            setErrors({ name: "Food already exists" })
-        } else {
-            console.log(data);
-            alert("Food created successfully")
+
+        try {
+            await axios.post("/foods", values)
+
+            toast.success("Food created successfully")
+
             resetForm()
-            imgRef.current.value = ""
+
+        } catch ({ response }) {
+            
+            response.status === 409 && toast.error("Food already exists")
         }
+
         setSubmitting(false)
     }
 
@@ -80,13 +65,10 @@ export default function CreateFoodPage() {
             initialValues={{
                 name: "",
                 price: "",
-                desc: "",
-                ingredients: "",
                 categoryId: "",
-                img: null,
+                imageUrl: "",
                 isVegan: true,
-                isFeatured: true,
-                options: [],
+                isFeatured: true
             }}
             validationSchema={schema}
             onSubmit={handleSubmit}
@@ -124,17 +106,6 @@ export default function CreateFoodPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="desc" className="form-label">Description</label>
-                            <Field
-                                id="desc"
-                                className="form-control"
-                                name="desc"
-                                as="textarea"
-                            />
-                            <ErrorMessage component="p" name="desc" className="form-error" />
-                        </div>
-
-                        <div className="form-group">
                             <label htmlFor="categoryId" className="form-label">Category</label>
                             <Field
                                 id="categoryId"
@@ -151,82 +122,15 @@ export default function CreateFoodPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="ingredients" className="form-label">Ingredients</label>
+                            <label htmlFor="imageUrl" className="form-label">Image Url</label>
                             <Field
-                                id="ingredients"
+                                type="text"
+                                id="imageUrl"
                                 className="form-control"
-                                name="ingredients"
-                                as="textarea"
-                            />
-                            <ErrorMessage component="p" name="ingredients" className="form-error" />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="img" className="form-label">Image</label>
-                            <input
-                                type="file"
-                                id="img"
-                                className="form-control"
-                                name="img"
-                                onChange={e => setFieldValue("img", e.target.files[0])}
-                                required
-                                accept=".jpg, .jpeg, .png"
-                                ref={imgRef}
+                                name="imageUrl"
                             />
                         </div>
-
-                        <FieldArray name="options">
-                            {({ push, remove }) => (
-                                <div className="form-group">
-                                    {values.options.length > 0 && <label htmlFor="options" className="form-label">Options</label>}
-
-                                    {values.options.map((option, index) => (
-                                        <div className="manage-food-variant" key={option.key}>
-                                            <div>
-                                                <Field
-                                                    type="text"
-                                                    id="name"
-                                                    className="form-control"
-                                                    name={`options[${index}].name`}
-                                                    placeholder="Name"
-                                                />
-
-                                                <ArrayErrorMessage name={`options[${index}].name`} />
-                                            </div>
-
-                                            <div>
-                                                <Field
-                                                    type="number"
-                                                    id="price"
-                                                    className="form-control"
-                                                    name={`options[${index}].price`}
-                                                    placeholder="Price"
-                                                />
-
-                                                <ArrayErrorMessage name={`options[${index}].price`} />
-                                            </div>
-
-                                            <button type="button" onClick={() => remove(index)}>
-                                                <MdClose size={24} />
-                                            </button>
-                                        </div>
-                                    ))}
-
-                                    <button
-                                        type="button"
-                                        className="manage-food-btn-text"
-                                        onClick={e => push({
-                                            id: Math.random(),
-                                            name: "",
-                                            price: ""
-                                        })}
-                                    >
-                                        Add Option
-                                    </button>
-                                </div>
-                            )}
-                        </FieldArray>
-
+                        
                         <div className="form-check">
                             <Field
                                 type="checkbox"

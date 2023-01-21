@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom"
 
-export default function CustomLink(props) {
+export default function Navigation(props) {
     const { activeClass, className, ...others } = props
 
     return (

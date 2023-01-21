@@ -1,60 +1,85 @@
-
-import { useState } from "react"
-import { useLocation, useSearchParams } from "react-router-dom"
-import { patchData } from "../utils/fetcher"
+import { ErrorMessage, Field, Formik, Form } from "formik"
+import { useEffect, useState } from "react"
+import { useLocation } from "react-router-dom"
+import { toast } from "react-toastify"
+import Loader from "../components/Loader"
+import axios from "../utils/axios"
+import { editSettingSchema } from "../utils/validationSchemas"
 
 export default function EditSettingPage() {
     const { state } = useLocation()
-    const [value, setValue] = useState(state.value)
-    const [isLoading, setIsLoading] = useState(false)
+    const [settings, setSettings] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
 
-    const handleSubmit = async e => {
-        e.preventDefault()
+    const fetchSettings = async () => {
+        const { data } = await axios.get("/settings")
 
-        setIsLoading(true)
-        await patchData(`/settings/${state.id}`, { value })
-        alert("Setting edited successfully")
+        setSettings(data)
+
         setIsLoading(false)
     }
 
+    const handleSubmit = async (values, { setSubmitting }) => {
+        setSubmitting(true)
+
+        await axios.patch("/settings", values)
+
+        toast.success("Setting edited successfully")
+
+        setSubmitting(false)
+    }
+
+    useEffect(() => {
+        fetchSettings()
+    }, [])
+
+    if(isLoading) {
+        return <Loader/>
+    }
+
     return (
-        <form className="card form" onSubmit={handleSubmit}>
-            <h2 className="card-header card-header-title">Change Setting</h2>
+        <Formik
+            initialValues={settings}
+            onSubmit={handleSubmit}
+            validationSchema={editSettingSchema}
+        >
+            {({ isSubmitting }) => (
+                <Form className="card form">
+                    <h2 className="card-header card-header-title">Change Setting</h2>
 
-            <div className="card-body">
-                <div className="form-group">
-                    <label htmlFor="name" className="form-label">Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        className="form-control"
-                        name="name"
-                        value={state.name}
-                        disabled
-                    />
-                </div>
+                    <div className="card-body">
+                        <div className="form-group">
+                            <label htmlFor="deliveryFee" className="form-label">Delivery Fee</label>
+                            <Field
+                                type="text"
+                                id="deliveryFee"
+                                className="form-control"
+                                name="deliveryFee"
+                            />
+                            <ErrorMessage as="p" name="deliveryFee" className="form-error"/>
+                        </div>
 
-                <div className="form-group">
-                    <label htmlFor="value" className="form-label">Value</label>
-                    <input
-                        type="number"
-                        id="value"
-                        name="value"
-                        className="form-control"
-                        value={value}
-                        onChange={e => setValue(e.target.value)}
-                        required
-                    />
-                </div>
+                        <div className="form-group">
+                            <label htmlFor="gstPercentage" className="form-label">Gst(%)</label>
+                            <Field
+                                type="text"
+                                id="gstPercentage"
+                                className="form-control"
+                                name="gstPercentage"
+                            />
+                            <ErrorMessage as="p" name="gstPercentage" className="form-error"/>
+                        </div>
 
-                <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="btn btn-primary btn-full"
-                >
-                    {isLoading ? "Please wait..." : "Save"}
-                </button>
-            </div>
-        </form>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="btn btn-primary btn-full"
+                        >
+                            {isLoading ? "Please wait..." : "Save"}
+                        </button>
+                    </div>
+                </Form>
+            )}
+        </Formik>
     )
 }

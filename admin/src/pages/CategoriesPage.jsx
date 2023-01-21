@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react"
-import { MdEdit, MdDelete } from "react-icons/md"
+import { MdDelete, MdEdit } from "react-icons/md"
 import { Link } from "react-router-dom"
-import Loader from "../components/Loader"
-import { deleteData, getData } from "../utils/fetcher"
-import swal from "sweetalert"
 import { toast } from "react-toastify"
+import swal from "sweetalert"
+import Loader from "../components/Loader"
+import axios from "../utils/axios"
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState([])
     const [isLoading, setIsLoading] = useState([])
 
     const fetchCategories = async () => {
-        const { data } = await getData("/categories")
+        const { data } = await axios.get("/categories")
         setCategories(data)
         setIsLoading(false)
     }
@@ -29,12 +29,12 @@ export default function CategoriesPage() {
 
         setIsLoading(true)
 
-        const { status } = await deleteData(`/categories/${categoryId}`)
+        await axios.delete(`/categories/${categoryId}`)
 
-        if (status === 200) {
-            setCategories(categories.filter(category => category.id !== categoryId))
-            toast.success("Category deleted successfully")
-        }
+        setCategories(categories.filter(category => category.id !== categoryId))
+        
+        toast.success("Category deleted successfully")
+
         setIsLoading(false)
     }
 
@@ -68,7 +68,7 @@ export default function CategoriesPage() {
                                 <td>{category.name}</td>
                                 <td>{category.totalFoods}</td>
                                 <td>
-                                    <img className="table-img" src={category.imgUrl} />
+                                    <img className="table-img" src={category.imageUrl} />
                                 </td>
                                 <td>{category.updatedAt}</td>
                                 <td>
