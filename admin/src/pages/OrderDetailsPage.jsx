@@ -2,6 +2,7 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import Loader from "../components/Loader"
+import { toast } from "react-toastify"
 
 export default function OrderDetailsPage() {
     const { orderId } = useParams()
@@ -48,6 +49,8 @@ export default function OrderDetailsPage() {
             status
         })
 
+        toast.success("Order updated successfully")
+
         setIsSubmitting(false)
     }
 
@@ -58,9 +61,7 @@ export default function OrderDetailsPage() {
     if(isLoading) {
         return <Loader/>
     }
-// console.log(order);
-// console.log(status);
-// return <div></div>
+
     return (
         <div className="order-details">
             <div className="card order-details-card">

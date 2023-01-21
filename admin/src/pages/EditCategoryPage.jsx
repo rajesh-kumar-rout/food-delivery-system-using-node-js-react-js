@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom"
 import { toast } from "react-toastify"
 import * as yup from "yup"
 import axios from "../utils/axios"
+import { categorySchema } from "../utils/validationSchemas"
 
 const schema = yup.object().shape({
     name: yup.string()
@@ -15,15 +16,13 @@ const schema = yup.object().shape({
 export default function EditCategoryPage() {
     const { state } = useLocation()
 
-    const handleSubmit = async (values, { resetForm, setSubmitting }) => {
+    const handleSubmit = async (values, { setSubmitting }) => {
         setSubmitting(true)
 
         try {
             await axios.patch(`/categories/${state.id}`, values)
 
             toast.success("Category updated")
-
-            resetForm()
 
         } catch ({ response }) {
             
@@ -36,10 +35,10 @@ export default function EditCategoryPage() {
     return (
         <Formik
             initialValues={state}
-            validationSchema={schema}
+            validationSchema={categorySchema}
             onSubmit={handleSubmit}
         >
-            {({ values, isSubmitting, setFieldValue, handleBlur }) => (
+            {({ isSubmitting }) => (
                 <Form className="card form">
                     <h2 className="card-header card-header-title">Edit Category</h2>
 

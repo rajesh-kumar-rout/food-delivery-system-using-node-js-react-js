@@ -1,42 +1,16 @@
 
-import { ErrorMessage, Field, Formik, Form } from "formik"
-import { useEffect } from "react"
-import { useState } from "react"
+import { ErrorMessage, Field, Form, Formik } from "formik"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import swal from "sweetalert"
+import { checkoutSchema } from "utils/validationSchema"
 import Loader from "../components/Loader"
 import axios from "../utils/axios"
-import swal from "sweetalert"
-import { useNavigate } from "react-router-dom"
-import { number, string, object } from "yup"
-
-export const validationSchema = object().shape({
-    name: string()
-        .trim()
-        .min(2, "Name must be at least 2 characters")
-        .max(30, "Name must be within 30 characters")
-        .required("Name is required"),
-
-    street: string()
-        .min(4, "Please describe more about your area")
-        .max(255, "Street must be within 255 characters")
-        .required("Street is required"),
-
-    landmark: string()
-        .max(255, "Landmark must be within 30 characters")
-        .required("Landmark is required"),
-
-    mobile: number()
-        .min(999999999, "Invalid mobile number")
-        .max(9999999999, "Invalid mobile number")
-        .required("Mobile number is required"),
-})
 
 export default function CheckoutPage() {
     const navigate = useNavigate()
 
-    const [deliveryFee, setDeliveryFee] = useState(0)
-    const [gstPercentage, setGstPercentage] = useState(0)
-    const [gstAmount, setGstAmount] = useState(0)
-    const [totalPayable, setTotalPayable] = useState(0)
+    const [pricing, setPricing] = useState({})
     const [isFetching, setIsFetching] = useState(true)
     const [deliveryAddress, setDeliveryAddress] = useState({
         name: "",
@@ -46,31 +20,19 @@ export default function CheckoutPage() {
     })
 
     const fetchData = async () => {
-        // const { data } = await axios.get("/cart/pricing")
-
-        // if (localStorage.getItem("deliveryAddress")) {
-        //     setDeliveryAddress(JSON.parse(localStorage.getItem("deliveryAddress")))
-        // }
-
-        // setDeliveryFee(data.deliveryFee)
-        // setGstPercentage(data.gstPercentage)
-        // setGstAmount(data.gstAmount)
-        // setTotalPayable(data.totalPayable)
-        // setIsFetching(false)
+        const { data } = await axios.get("/cart/pricing")
+        setPricing(data)
+        setIsFetching(false)
     }
 
     const handleSubmit = async (values, { setSubmitting }) => {
-        if (values.saveForNextTime) {
-            localStorage.setItem("deliveryAddress", values)
-        }
-
         setSubmitting(true)
 
-        const { data } = await axios.post("/order", values)
+        const { data } = await axios.post("/orders", values)
 
         swal({
             title: "Thank You",
-            text: `You order placed successfully. Tracking id : ${data.id}`,
+            text: `You order placed successfully. Tracking id : ${data.orderId}`,
             icon: "success",
             button: "Ok"
         })
@@ -82,14 +44,18 @@ export default function CheckoutPage() {
         fetchData()
     }, [])
 
-    // if (isFetching) {
-    //     return <Loader />
-    // }
+    if (isFetching) {
+        return <Loader />
+    }
+
+    if (!pricing.foodPrice) {
+        return navigate("/", { replace: true })
+    }
 
     return (
         <Formik
             initialValues={deliveryAddress}
-            validationSchema={validationSchema}
+            validationSchema={checkoutSchema}
             onSubmit={handleSubmit}
         >
             {({ isSubmitting }) => (
@@ -163,16 +129,6 @@ export default function CheckoutPage() {
                                 />
                                 <ErrorMessage component="p" name="instruction" className="form-error" />
                             </div>
-
-                            <div className="form-check">
-                                <Field
-                                    type="checkbox"
-                                    id="nextTime"
-                                    className="form-check-input"
-                                    name="nextTime"
-                                />
-                                <label className="form-check-label">Save this address for next time</label>
-                            </div>
                         </div>
                     </div>
 
@@ -182,25 +138,31 @@ export default function CheckoutPage() {
 
                             <div className="card-body">
                                 <div className="pricing">
-                                    <p>Total Price</p>
-                                    <p>₹ 56</p>
+                                    <p>Food Price</p>
+                                    <p>₹ {pricing.foodPrice}</p>
                                 </div>
                                 <div className="pricing">
                                     <p>Delivery Fee</p>
-                                    <p>₹ 78</p>
+                                    <p>₹ {pricing.deliveryFee}</p>
                                 </div>
                                 <div className="pricing">
-                                    <p>Gst 7%</p>
-                                    <p>₹ 78</p>
+                                    <p>Gst {pricing.gstPercentage}%</p>
+                                    <p>₹ {pricing.gstAmount}</p>
                                 </div>
                                 <div className="pricing pricing-last-item">
-                                    <p>Total Payable</p>
-                                    <p>₹ 234</p>
+                                    <p>Total Amount</p>
+                                    <p>₹ {pricing.totalAmount}</p>
                                 </div>
                             </div>
 
                             <div className="card-footer">
-                                <button className="btn btn-primary btn-full">Place Order</button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="btn btn-primary btn-full"
+                                >
+                                    Place Order
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -208,5 +170,4 @@ export default function CheckoutPage() {
             )}
         </Formik>
     )
-    return <div></div>
 }

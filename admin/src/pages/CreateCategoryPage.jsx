@@ -1,15 +1,9 @@
-import axios from "../utils/axios"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { toast } from "react-toastify"
-import * as yup from "yup"
+import axios from "../utils/axios"
+import { categorySchema } from "../utils/validationSchemas"
 
-const schema = yup.object().shape({
-    name: yup.string()
-        .trim()
-        .min(2, "Name must be at least 2 characters")
-        .max(30, "Name must be within 30 characters")
-        .required("Name is required")
-})
+
 
 export default function CreateCategoryPage() {
 
@@ -37,7 +31,7 @@ export default function CreateCategoryPage() {
                 name: "",
                 imageUrl: ""
             }}
-            validationSchema={schema}
+            validationSchema={categorySchema}
             onSubmit={handleSubmit}
         >
             {({ isSubmitting }) => (
@@ -64,6 +58,7 @@ export default function CreateCategoryPage() {
                                 className="form-control"
                                 name="imageUrl"
                             />
+                            <ErrorMessage component="p" name="imageUrl" className="form-error" />
                         </div>
 
                         <button

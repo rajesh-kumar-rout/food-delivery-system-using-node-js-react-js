@@ -87,12 +87,7 @@ export default function SideBar({ show, onNavigate }) {
             link: "/settings",
             name: "Settings",
             icon: <MdSettings size={24} />
-        },
-        {
-            link: "/logout",
-            name: "Logout",
-            icon: <MdLogout size={24} />
-        },
+        }
     ])
 
     const handleMenuClick = (e, selectedIndex) => {

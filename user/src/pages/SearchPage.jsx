@@ -4,25 +4,37 @@ import { useEffect } from "react"
 import Food from "components/Food"
 import Loader from "components/Loader"
 import axios from "utils/axios"
+import { useSearchParams } from "react-router-dom"
 
 export default function SearchPage() {
-    const [query, setQuery] = useState("")
+    const [queries, setQueries] = useSearchParams()
+
+    const query = queries.get("query") ?? ""
+
     const [isFetching, setIsFetching] = useState(true)
+
     const [categories, setCategories] = useState([])
+
     const [foods, setFoods] = useState([])
+    
     const [filteredFoods, setFilteredFoods] = useState([])
 
     const fetchData = async () => {
-        const categoriesRes = await axios.get("/categories")
-        const foodsRes = await axios.get("/foods")
+        const [categoriesRes, foodsRes] = await Promise.all([
+            axios.get("/categories"),
+            axios.get("/foods")
+        ])
+
         setCategories(categoriesRes.data)
+
         setFoods(foodsRes.data)
+
         setIsFetching(false)
     }
 
     const filterFoods = async () => {
         const filteredFoods = foods.filter(food => food.name.toLowerCase().includes(query.toLowerCase()) ||
-            food.categoryName.toLowerCase().includes(query.toLowerCase()))
+            food.category.toLowerCase().includes(query.toLowerCase()))
         setFilteredFoods(filteredFoods)
     }
 
@@ -32,7 +44,7 @@ export default function SearchPage() {
 
     useEffect(() => {
         filterFoods()
-    }, [query])
+    }, [queries, foods])
 
     if (isFetching) {
         return <Loader />
@@ -46,13 +58,13 @@ export default function SearchPage() {
                     type="search"
                     value={query}
                     className="form-control border-none" 
-                    onChange={event => setQuery(event.target.value)}
+                    onChange={event => setQueries(`query=${event.target.value}`)}
                     placeholder="Search food here..."
                 />
             </form>
 
             <div className="search-result">
-                {query.length ? "Search Results" : "Top Categories"}
+                {query?.length ? "Search Results" : "Top Categories"}
             </div>
 
             {query.length > 0 ? (
@@ -67,8 +79,8 @@ export default function SearchPage() {
             ) : (
                 <div className="search-categories">
                     {categories.map(category => (
-                        <div className="category" onClick={() => setQuery(category.name)}>
-                            <img src={category.imgUrl} />
+                        <div className="category" onClick={() => setQueries(`query=${category.name}`)}>
+                            <img src={category.imageUrl} />
                             <p className="category-name">{category.name}</p>
                         </div>
                     ))}

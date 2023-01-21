@@ -1,26 +1,27 @@
-import { Formik, Form, Field, ErrorMessage } from "formik"
-import { useNavigate } from "react-router-dom"
+import { ErrorMessage, Field, Form, Formik } from "formik"
+import { useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
-import { object, string } from "yup"
 import axios from "utils/axios"
-
-export const validationSchema = object().shape({
-    email: string().required("Email is required"),
-    password: string().required("Password is required")
-})
+import { loginSchema } from "utils/validationSchema"
 
 export default function LoginPage() {
-    const navigate = useNavigate()
+    const [queries] = useSearchParams()
 
     const handleSubmit = async (values, { setSubmitting }) => {
         setSubmitting(true)
+
         try {
-            const { data } = await axios.post("/account/login", values)
-            localStorage.setItem("authToken", data.authToken)
-            window.location.href = "/"
+            const { data } = await axios.post("/auth/login", values)
+
+            localStorage.setItem("token", data.token)
+
+            window.location.href = queries.get("returnUrl") ?? "/"
+
         } catch ({ response }) {
+
             response?.status === 422 && toast.error("Invalid email or password")
         }
+
         setSubmitting(false)
     }
 
@@ -28,9 +29,9 @@ export default function LoginPage() {
         <Formik
             initialValues={{
                 email: "",
-                password: "",
+                password: ""
             }}
-            validationSchema={validationSchema}
+            validationSchema={loginSchema}
             onSubmit={handleSubmit}
         >
             {({ isSubmitting }) => (
@@ -55,6 +56,7 @@ export default function LoginPage() {
                                 id="password"
                                 className="form-control"
                                 name="password"
+                                type="password"
                             />
                             <ErrorMessage component="p" name="password" className="form-error" />
                         </div>

@@ -1,23 +1,23 @@
-import { useEffect } from "react"
-import { useState } from "react"
-import { useParams } from "react-router-dom"
 import Loader from "components/Loader"
+import { useEffect, useState } from "react"
+import { useParams } from "react-router-dom"
 import axios from "utils/axios"
 
 export default function OrderDetailsPage() {
     const { orderId } = useParams()
 
-    const [foods, setFoods] = useState([])
-    const [deliveryAddress, setDeliveryAddress] = useState({})
-    const [pricingDetails, setPricingDetails] = useState({})
-    const [isFetching, setIsFetching] = useState(false)
+    const [order, setOrder] = useState({})
+
+    const [isFetching, setIsFetching] = useState(true)
+
+    const { paymentDetails, deliveryAddress, foods } = order
 
     const fetchData = async () => {
-        // const { data } = await axios.get(`/orders/${orderId}`)
-        // setIsFetching(false)
-        // setFoods(data.foods)
-        // setDeliveryAddress(data.deliveryAddress)
-        // setPricingDetails(data.pricingDetails)
+        const { data } = await axios.get(`/orders/${orderId}`)
+
+        setOrder(data)
+
+        setIsFetching(false)
     }
 
     useEffect(() => {
@@ -42,28 +42,15 @@ export default function OrderDetailsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <p style={{ textAlign: 'left' }}>Ginger pasta masala</p>
-                                    </td>
-                                    <td>1</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p style={{ textAlign: 'left' }}>Veg masala noodles</p></td>
-                                    <td>1</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p style={{ textAlign: 'left' }}>Chicken 65 (small)</p>
-                                    </td>
-                                    <td>1</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p style={{ textAlign: 'left' }}>Chicken kabab</p></td>
-                                    <td>2</td>
-                                </tr>
+                                {foods.map(food => (
+                                    <tr>
+                                        <td>
+                                            <p style={{ textAlign: "left" }}>{food.name}</p>
+                                        </td>
+                                        <td>{food.qty}</td>
+                                    </tr>
+                                ))}
+
                             </tbody>
                         </table>
                     </div>
@@ -77,9 +64,10 @@ export default function OrderDetailsPage() {
                     </div>
 
                     <div className="card-body">
-                        <p>A.P Nagar, 4th cross, main road</p>
-                        <p className="mt-2">Near shiv temple</p>
-                        <p className="mt-2">instruction: bring some water</p>
+                        <p>{deliveryAddress.name}, {deliveryAddress.mobile}</p>
+                        <p className="mt-2">{deliveryAddress.street}</p>
+                        <p className="mt-2">{deliveryAddress.landmark}</p>
+                        <p className="mt-2">instruction: {deliveryAddress.instruction}</p>
                     </div>
                 </div>
 
@@ -89,10 +77,10 @@ export default function OrderDetailsPage() {
                     </div>
 
                     <div className="card-body">
-                        <p>Food Price: Rs 567</p>
-                        <p className="mt-2">Delivery Fee: Rs 78</p>
-                        <p className="mt-2">Gst (7%): Rs 34</p>
-                        <p className="mt-2">Total Amount: Rs 789</p>
+                        <p>Food Price: Rs {paymentDetails.foodPrice}</p>
+                        <p className="mt-2">Delivery Fee: Rs {paymentDetails.deliveryFee}</p>
+                        <p className="mt-2">Gst ({paymentDetails.gstPercentage}%): Rs {paymentDetails.gstAmount}</p>
+                        <p className="mt-2">Total Amount: Rs {paymentDetails.totalAmount}</p>
                     </div>
                 </div>
             </div>

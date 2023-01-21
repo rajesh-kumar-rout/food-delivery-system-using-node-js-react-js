@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom"
-import { useState } from "react"
+import Loader from "components/Loader"
 import QtyControl from "components/QtyControl"
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import axios from "utils/axios"
 
 const cart = [
@@ -25,28 +26,52 @@ const cart = [
 ]
 
 export default function CartPage() {
-    const [cartItems, setCartItems] = useState(cart)
-    const [isFetching, setIsFetching] = useState(true)
+    const [cart, setCart] = useState([])
     const [isLoading, setIsLoading] = useState(true)
-    const [pricingDetails, setPricingDetails] = useState({})
+    const [pricing, setPricing] = useState({})
 
     const fetchData = async () => {
-        const { data } = await axios.get("/cart")
-        setIsFetching(data.cartItems)
-        setPricingDetails(data.pricingDetails)
-        setIsFetching(false)
-    }
+        const [cartRes, pricingRes] = await Promise.all([
+            axios.get("/cart"),
+            axios.get("/cart/pricing")
+        ])
 
-    const handleQuantityChange = async (itemId, quantity) => {
-        setIsLoading(true)
-        await axios.patch(`/cart/${itemId}`, { quantity })
+        setPricing(pricingRes.data)
+
+        setCart(cartRes.data)
+
         setIsLoading(false)
     }
 
-    const handleRemoveItem = async (itemId) => {
+    const handleQtyChange = async (foodId, qty) => {
         setIsLoading(true)
-        await axios.delete(`/cart/${itemId}`)
-        setIsLoading(false)
+
+        await axios.post("/cart", {
+            foodId,
+            qty
+        })
+
+        fetchData()
+    }
+
+    const handleDeleteItem = async (foodId) => {
+        setIsLoading(true)
+
+        await axios.delete(`/cart/${foodId}`)
+
+        fetchData()
+    }
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
+    if(isLoading) {
+        return <Loader/>
+    }
+
+    if(cart.length === 0) {
+        return <div>Your cart is empty</div>
     }
 
     return (
@@ -54,15 +79,15 @@ export default function CartPage() {
             <div className="card">
                 <div className="card-header card-title">Cart Items</div>
                 <div className="card-body" >
-                    {cartItems.map(cartItem => (
+                    {cart.map(cartItem => (
                         <div className="cart-item">
-                            <img className="cart-item-img" src={cartItem.imgUrl} />
+                            <img className="cart-item-img" src={cartItem.imageUrl} />
                             <div className="cart-item-right">
                                 <p className="cart-item-name">{cartItem.name}</p>
                                 <p className="cart-item-price">Rs. {cartItem.price}</p>
                                 <div className="cart-item-footer">
-                                    <QtyControl quantity={cartItem.qty} />
-                                    <button className="btn btn-primary btn-sm">Remove</button>
+                                    <QtyControl quantity={cartItem.qty} onChange={qty => handleQtyChange(cartItem.foodId, qty)} />
+                                    <button className="btn btn-primary btn-sm" onClick={() => handleDeleteItem(cartItem.foodId)}>Remove</button>
                                 </div>
                             </div>
                         </div>
@@ -75,20 +100,20 @@ export default function CartPage() {
 
                 <div className="card-body">
                     <div className="pricing">
-                        <p>Total Price</p>
-                        <p>Rs. 56</p>
+                        <p>Food Price</p>
+                        <p>Rs. {pricing.foodPrice}</p>
                     </div>
                     <div className="pricing">
                         <p>Delivery Fee</p>
-                        <p>Rs. 78</p>
+                        <p>Rs. {pricing.deliveryFee}</p>
                     </div>
                     <div className="pricing">
                         <p>Gst(7%)</p>
-                        <p>Rs. 78</p>
+                        <p>Rs. {pricing.gstPercentage}</p>
                     </div>
                     <div className="pricing pricing-last-item">
-                        <p>Total Payable</p>
-                        <p>Rs. 234</p>
+                        <p>Total Amount</p>
+                        <p>Rs. {pricing.totalAmount}</p>
                     </div>
                 </div>
 

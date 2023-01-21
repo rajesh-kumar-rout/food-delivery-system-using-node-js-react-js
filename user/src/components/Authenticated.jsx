@@ -1,7 +1,5 @@
 import { useContext } from "react"
 import { Navigate, Outlet, useLocation, useSearchParams } from "react-router-dom"
-import { toast } from "react-toastify"
-import { SITE_URL } from "../utils/constants"
 import { AuthContext } from "./Auth"
 
 export default function Authenticated() {
@@ -15,7 +13,7 @@ export default function Authenticated() {
 
     searchParams.forEach((value, key) => path += `${key}=${value}`)
 
-    path = `${SITE_URL}?returnUrl=${path}`
+    path = `/auth/login?returnUrl=${path}`
 
-    return currentUser ? <Outlet /> : toast.error("Please login")
+    return currentUser ? <Outlet /> : <Navigate to={path} replace />
 }

@@ -1,25 +1,10 @@
 import { ErrorMessage, Field, Form, Formik } from 'formik'
 import { useEffect, useRef, useState } from "react"
 import { toast } from "react-toastify"
-import * as yup from 'yup'
 import axios from "../utils/axios"
+import { foodSchema } from '../utils/validationSchemas'
 
-const schema = yup.object().shape({
-    name: yup.string()
-        .trim()
-        .required("Name is required")
-        .min(2, "Name must be at least 2 character")
-        .max(100, "Name must be within 100 characters"),
 
-    price: yup.number()
-        .typeError("Price is required")
-        .required("Price is required")
-        .positive()
-        .integer(),
-
-    categoryId: yup.number()
-        .required("Please select a category")
-})
 
 export default function CreateFoodPage() {
     const [categories, setCategories] = useState([])
@@ -70,7 +55,7 @@ export default function CreateFoodPage() {
                 isVegan: true,
                 isFeatured: true
             }}
-            validationSchema={schema}
+            validationSchema={foodSchema}
             onSubmit={handleSubmit}
         >
             {({

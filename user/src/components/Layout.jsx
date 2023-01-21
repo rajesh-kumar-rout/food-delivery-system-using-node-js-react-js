@@ -5,6 +5,7 @@ export default function Layout() {
     return (
         <div>
             <NavBar />
+
             <div className="layout">
                 <div className="layout-container">
                     <Outlet />

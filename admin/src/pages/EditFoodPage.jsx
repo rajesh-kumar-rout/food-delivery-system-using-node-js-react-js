@@ -1,23 +1,10 @@
 import { ErrorMessage, Field, Form, Formik } from 'formik'
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { toast } from "react-toastify"
-import * as yup from 'yup'
 import axios from "../utils/axios"
+import { foodSchema } from '../utils/validationSchemas'
 
-const schema = yup.object().shape({
-    name: yup.string()
-        .trim()
-        .required("Name is required")
-        .max(30, "Name must be within 100 characters"),
-
-    price: yup.number()
-        .required("Price is required")
-        .positive()
-        .integer(),
-
-    categoryId: yup.number().required("Please select a category")
-})
 
 export default function EditFoodPage() {
     const { foodId } = useParams()
@@ -65,11 +52,10 @@ export default function EditFoodPage() {
     return (
         <Formik
             initialValues={food}
-            validationSchema={schema}
+            validationSchema={foodSchema}
             onSubmit={handleSubmit}
         >
             {({
-                values,
                 isSubmitting,
                 setFieldValue
             }) => (

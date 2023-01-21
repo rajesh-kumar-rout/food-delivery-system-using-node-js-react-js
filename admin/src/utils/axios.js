@@ -1,7 +1,7 @@
 import axios from "axios"
-import { BASE_URL } from "./constants"
+import { ADMIN_URL } from "./constants"
 
-axios.defaults.baseURL = BASE_URL
+axios.defaults.baseURL = ADMIN_URL
 
 axios.interceptors.request.use(config => {
     if (localStorage.getItem("token")) {

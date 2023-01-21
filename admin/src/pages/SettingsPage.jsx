@@ -1,7 +1,8 @@
-import axios from "../utils/axios"
 import { useEffect, useState } from "react"
 import { MdEdit } from "react-icons/md"
 import { Link } from "react-router-dom"
+import Loader from "../components/Loader"
+import axios from "../utils/axios"
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState({})
@@ -20,7 +21,7 @@ export default function SettingsPage() {
     }, [])
 
     if (isLoading) {
-        return <div>Loading...</div>
+        return <Loader/>
     }
 
     return (

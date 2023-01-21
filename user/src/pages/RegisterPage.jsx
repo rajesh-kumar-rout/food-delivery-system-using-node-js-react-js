@@ -1,38 +1,25 @@
-import { Formik, Form, Field, ErrorMessage } from "formik"
-import { object, string, ref } from "yup"
+import { ErrorMessage, Field, Form, Formik } from "formik"
 import { toast } from "react-toastify"
 import axios from "utils/axios"
-
-export const schema = object().shape({
-    name: string()
-        .trim()
-        .min(2, "Name must be at least 2 characters")
-        .max(30, "Name must be within 30 characters")
-        .required("Name is required"),
-
-    email: string()
-        .max(30, "Email must be within 30 characters")
-        .required("Email is required"),
-
-    password: string()
-        .min(6, "Password must be at least 6 characters")
-        .max(20, "Password must be within 30 characters")
-        .required("Password is required"),
-
-    confirmPassword: string()
-        .required("Please confirm your password")
-        .oneOf([ref("password"), null], "Password mismatch"),
-})
+import { registerSchema } from "utils/validationSchema"
 
 export default function RegisterPage() {
 
     const handleSubmit = async (values, { setSubmitting }) => {
         setSubmitting(true)
+
         try {
-            await axios.post("/account/register", values)
+            const { data } = await axios.post("/auth/register", values)
+
+            localStorage.setItem("token", data.token)
+
+            window.location.href = "/"
+
         } catch ({ response }) {
+
             response?.status === 409 && toast.error("Email already exists")
         }
+
         setSubmitting(false)
     }
 
@@ -44,7 +31,7 @@ export default function RegisterPage() {
                 password: "",
                 confirmPassword: ""
             }}
-            validationSchema={schema}
+            validationSchema={registerSchema}
             onSubmit={handleSubmit}
         >
             {({ isSubmitting }) => (

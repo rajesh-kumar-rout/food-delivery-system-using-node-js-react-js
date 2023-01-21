@@ -1,9 +1,7 @@
-import { useEffect } from "react"
-import { useState } from "react"
-import { Link } from "react-router-dom"
 import Loader from "components/Loader"
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import axios from "utils/axios"
-import { MdEdit, MdViewList, MdVisibility } from "react-icons/md"
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([])
@@ -11,7 +9,9 @@ export default function OrdersPage() {
 
     const fetchOrders = async () => {
         const { data } = await axios.get("/orders")
+
         setOrders(data)
+        
         setIsFetching(false)
     }
 
@@ -40,19 +40,19 @@ export default function OrdersPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {[1, 2, 3, 1, 4, 1, 1].map(e => (
+                            {orders.map(order => (
                                 <tr>
-                                    <td>234</td>
-                                    <td>Rs. 234</td>
-                                    <td>4</td>
+                                    <td>{order.id}</td>
+                                    <td>Rs. {order.totalAmount}</td>
+                                    <td>{order.totalFoods}</td>
                                     <td>
-                                        <p className={`badge ${e == 2 || e == 4 ? 'badge-success' : ''}`}>
-                                            {e == 2 || e == 4 ? 'Pending' : 'Delivered'}
+                                        <p className={`badge badge-success`}>
+                                            {order.status}
                                         </p>
                                     </td>
-                                    <td>10:15 PM</td>
+                                    <td>{order.createdAt}</td>
                                     <td>
-                                        <Link to={`/order/${1}`} className="btn btn-primary btn-sm">
+                                        <Link to={`/auth/orders/${order.id}`} className="btn btn-primary btn-sm">
                                             View
                                         </Link>
                                     </td>

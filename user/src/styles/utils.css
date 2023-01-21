@@ -9,6 +9,7 @@
 .max-w-500 {
     max-width: 500px;
 }
+
 .max-w-600 {
     max-width: 600px;
 }
@@ -24,4 +25,12 @@
 
 .max-h-content {
     max-height: min-content;
+}
+
+.mt-2{
+    margin-top: 8px;
+}
+
+.mt-4 {
+    margin-top: 16px;
 }
