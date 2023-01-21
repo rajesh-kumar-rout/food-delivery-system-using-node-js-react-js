@@ -6,7 +6,7 @@ import { checkValidationError } from "../utils/validator.js"
 const router = express()
 
 router.get("/", async (req, res) => {
-    const { orders } = await knex("foodOrders")
+    const orders = await knex("foodOrders")
         .join("foodPaymentDetails", "foodPaymentDetails.orderId", "foodOrders.id")
         .join("foodDeliveryAddresses", "foodDeliveryAddresses.orderId", "foodOrders.id")
         .select(
@@ -15,11 +15,11 @@ router.get("/", async (req, res) => {
             "foodOrders.createdAt",
             "foodDeliveryAddresses.mobile",
 
-            knex.raw(`ROUND(
+            knex.raw(`CAST(ROUND(
                 foodPaymentDetails.foodPrice + 
                 foodPaymentDetails.deliveryFee + 
                 (foodPaymentDetails.foodPrice * foodPaymentDetails.gstPercentage / 100)
-            ) AS totalPayable`)
+            ) AS INT) AS totalAmount`)
         )
 
     res.json(orders)
@@ -37,7 +37,7 @@ router.get("/:orderId", async (req, res) => {
         return res.status(404).json({ error: "Order not found" })
     }
 
-    const orderedFoods = await knex("foodOrderedFoods")
+    const foods = await knex("foodOrderedFoods")
         .where({ orderId })
         .select(
             "id",
@@ -51,8 +51,9 @@ router.get("/:orderId", async (req, res) => {
             "foodPrice",
             "deliveryFee",
             "gstPercentage",
-            knex.raw("(foodPrice + deliveryFee + (foodPrice * gstPercentage / 100)) AS totalAmount")
+            knex.raw("CAST(ROUND(foodPrice + deliveryFee + (foodPrice * gstPercentage / 100)) AS INT) AS totalAmount")
         )
+        .first()
 
     const deliveryAddress = await knex("foodDeliveryAddresses")
         .where({ orderId })
@@ -63,6 +64,7 @@ router.get("/:orderId", async (req, res) => {
             "landmark",
             "instruction"
         )
+        .first()
 
     const order = await knex("foodOrders")
         .where({ id: orderId })
@@ -73,10 +75,11 @@ router.get("/:orderId", async (req, res) => {
             "createdAt",
             "updatedAt"
         )
+        .first()
 
     res.json({
         order,
-        orderedFoods,
+        foods,
         paymentDetails,
         deliveryAddress
     })
@@ -87,15 +90,18 @@ router.patch(
 
     param("orderId").isInt().toInt(),
 
-    body("status").isIn(["Placed", "Preparing", "Prepared", "Delivered"]),
+    body("status").isIn(["Placed", "Preparing", "Prepared", "Canceled", "Delivered"]),
 
-    body("deliveryAgentId").isInt().toInt(),
+    body("deliveryAgentId")
+        .optional()
+        .isInt()
+        .toInt(),
 
     checkValidationError,
 
     async (req, res) => {
         const { orderId } = req.params
-        const { deliveryAgentId } = req.body
+        const { deliveryAgentId, status } = req.body
 
         const isOrderExists = await knex("foodOrders")
             .where({ id: orderId })
@@ -106,7 +112,7 @@ router.patch(
             return res.status(404).json({ error: "Order not found" })
         }
 
-        const isDeliveryAgentExists = await knex("socialUsers")
+        const isDeliveryAgentExists = await knex("foodUsers")
             .where({ id: deliveryAgentId })
             .where({ isDeliveryAgent: true })
             .select(1)
@@ -116,7 +122,7 @@ router.patch(
             return res.status(404).json({ error: "Delivery boy not found" })
         }
 
-        await knex("socialOrders")
+        await knex("foodOrders")
             .where({ id: orderId })
             .update({
                 status,
