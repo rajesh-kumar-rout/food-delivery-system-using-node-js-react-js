@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
                 foodPaymentDetails.foodPrice + 
                 foodPaymentDetails.deliveryFee + 
                 (foodPaymentDetails.foodPrice * foodPaymentDetails.gstPercentage / 100)
-            ) AS INT) AS totalAmount`)
+            ) AS SIGNED) AS totalAmount`)
         )
 
     res.json(orders)
@@ -51,7 +51,7 @@ router.get("/:orderId", async (req, res) => {
             "foodPrice",
             "deliveryFee",
             "gstPercentage",
-            knex.raw("CAST(ROUND(foodPrice + deliveryFee + (foodPrice * gstPercentage / 100)) AS INT) AS totalAmount")
+            knex.raw("CAST(ROUND(foodPrice + deliveryFee + (foodPrice * gstPercentage / 100)) AS SIGNED) AS totalAmount")
         )
         .first()
 
