@@ -58,11 +58,11 @@ router.get("/pricing", async (req, res) => {
     const { foodPrice } = await knex("foodCart")
         .where({ userId: currentUserId })
         .join("foodFoods", "foodFoods.id", "foodCart.foodId")
-        .select(knex.raw("CAST(SUM(foodFoods.price * foodCart.qty) AS INT) AS foodPrice"))
+        .select(knex.raw("CAST(SUM(foodFoods.price * foodCart.qty) AS SIGNED) AS foodPrice"))
         .first()
 
     const settings = await knex("foodSettings").first()
-console.log(settings.gstPercentage);
+
     const gstAmount = Math.round(foodPrice * (settings.gstPercentage / 100))
 
     const totalAmount = settings.deliveryFee + gstAmount + foodPrice
