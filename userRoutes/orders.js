@@ -110,7 +110,7 @@ router.get("/", async (req, res) => {
                             foodPaymentDetails.deliveryFee + 
                             foodPaymentDetails.foodPrice * (foodPaymentDetails.gstPercentage / 100)
                         ) 
-                        AS INT
+                        AS SIGNED
                     )
                 `))
                 .first()

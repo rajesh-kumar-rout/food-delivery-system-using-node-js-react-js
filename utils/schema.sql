@@ -91,7 +91,7 @@ CREATE TABLE `foodPaymentDetails` (
     FOREIGN KEY (`orderId`) REFERENCES `foodOrders`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE `foodDeliveryAddress` (
+CREATE TABLE `foodDeliveryAddresses` (
     `id` BIGINT(20) PRIMARY KEY AUTO_INCREMENT,
     `name` VARCHAR(30) NOT NULL,
     `mobile` BIGINT(10) NOT NULL,
