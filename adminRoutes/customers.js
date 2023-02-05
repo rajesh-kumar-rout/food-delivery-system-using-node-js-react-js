@@ -1,19 +1,16 @@
 import { Router } from "express"
-import knex from "../utils/database.js"
+import { User } from "../models/model.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const customers = await knex("foodUsers")
-        .select(
-            "id",
-            "name",
-            "email",
-            "createdAt",
-            "updatedAt",
-        )
+    const users = await User.findAll({
+        attributes: {
+            exclude: ["password"]
+        }
+    })
 
-    res.json(customers)
+    res.json(users)
 })
 
 export default router

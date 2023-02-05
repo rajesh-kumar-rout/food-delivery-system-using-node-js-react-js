@@ -1,34 +1,44 @@
 import { Router } from "express"
-import knex from "../utils/database.js"
+import { Category, Food, Order, Slider } from "../models/model.js"
 
 const router = Router()
 
 router.get("/analytics", async (req, res) => {
-    const data = await knex("foodFoods")
-        .select(
-            knex.raw("COUNT(foodFoods.id) AS totalFoods"),
+    const totalCategories = await Category.count()
 
-            knex("foodCategories").count().as("totalCategories"),
+    const totalSliders = await Slider.count()
 
-            knex("foodOrders").count().as("totalOrders"),
+    const totalFoods = await Food.count()
 
-            knex("foodOrders")
-                .where("foodOrders.status", "Preparing")
-                .count().as("totalPreparedOrders"),
+    const totalOrders = await Order.count()
 
-            knex("foodOrders")
-                .where("foodOrders.status", "Preparing")
-                .count().as("totalPreparingOrders"),
+    const totalPreparingOrders = await Order.count({
+        where: {
+            status: "Pending"
+        }
+    })
 
-            knex("foodOrders")
-                .where("foodOrders.status", "Delivered")
-                .count().as("totalDeliveredOrders"),
+    const toalalPrepredOrders = await Order.count({
+        where: {
+            status: "Prepared"
+        }
+    })
 
-            knex("foodUsers").count().as("totalCustomers")
-        )
-        .first()
+    const totalDeliveredOrders = await Order.count({
+        where: {
+            status: "Delivered"
+        }
+    })
 
-    res.json(data)
+    res.json({
+        totalCategories,
+        totalSliders,
+        totalFoods,
+        totalOrders,
+        totalPreparingOrders,
+        toalalPrepredOrders,
+        totalDeliveredOrders
+    })
 })
 
 export default router

@@ -1,42 +1,32 @@
 import express from "express"
-import { body } from "express-validator"
-import knex from "../utils/database.js"
+import { body, param } from "express-validator"
+import { Op } from "sequelize"
+import { Category, Food } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = express.Router()
 
 router.get("/", async (req, res) => {
-    const foods = await knex("foodFoods")
-        .select(
-            "id",
-            "name",
-            "price",
-            "isFeatured",
-            "isVegan",
-            "imageUrl",
-            "createdAt",
-            "updatedAt"
-        )
+    const foods = await Food.findAll({
+        include: {
+            model: Category,
+            attributes: ["name"]
+        }
+    })
 
     res.json(foods)
-})
-
-router.get("/:foodId", async (req, res) => {
-    const { foodId } = req.params
-
-    const food = await knex("foodFoods")
-        .where({ id: foodId })
-        .first()
-
-    res.json(food)
 })
 
 router.post(
     "/",
 
-    body("name").trim().isLength({ max: 100 }),
+    body("name")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
-    body("price").isInt({ max: 10000 }).toInt(),
+    body("price").isInt().toInt(),
 
     body("isFeatured").isBoolean().toBoolean(),
 
@@ -51,115 +41,104 @@ router.post(
     async (req, res) => {
         const { name, price, isFeatured, isVegan, categoryId, imageUrl } = req.body
 
-        const isCategoryExists = await knex("foodCategories")
-            .where({ id: categoryId })
-            .select(1)
-            .first()
-
-        if (!isCategoryExists) {
+        if (!await Category.findByPk(categoryId)) {
             return res.status(404).json({ error: "Category does not exists" })
         }
 
-        const isFoodExists = await knex("foodFoods")
-            .where({ name })
-            .select(1)
-            .first()
-
-        if (isFoodExists) {
-            return res.status(409).json({ error: "Food already exists" })
+        if (await Food.findOne({ where: { name } })) {
+            return res.status(404).json({ error: "Food already exists" })
         }
 
-        await knex("foodFoods").insert({
+        const food = await Food.create({
             name,
             price,
             isVegan,
             isFeatured,
-            categoryId,
-            imageUrl
+            imageUrl,
+            categoryId
         })
 
-        res.status(201).json({ success: "Food created successfully" })
+        res.status(201).json(food)
     }
 )
 
 router.patch(
     "/:foodId",
 
-    body("name").trim().isLength({ max: 100 }),
+    param("foodId").isInt().toInt(),
+    
+    body("name")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
-    body("price")
-        .isInt()
-        .toInt()
-        .default(0),
+    body("price").isInt().toInt(),
 
-    body("isFeatured")
-        .isBoolean()
-        .toBoolean()
-        .default(true),
+    body("isFeatured").isBoolean().toBoolean(),
 
-    body("isVegan")
-        .isBoolean()
-        .toBoolean()
-        .default(false),
+    body("isVegan").isBoolean().toBoolean(),
 
     body("categoryId").isInt().toInt(),
 
-    body("imageUrl").optional().isURL(),
+    body("imageUrl").isURL(),
 
     checkValidationError,
 
     async (req, res) => {
         const { foodId } = req.params
 
-        let { name, price, isFeatured, isVegan, categoryId, imageUrl } = req.body
+        const { name, price, isFeatured, isVegan, categoryId, imageUrl } = req.body
 
-        const food = await knex("foodFoods")
-            .where({ id: foodId })
-            .first()
-
-        if (!food) {
-            return res.status(404).json({ error: "Food not found" })
+        if (!await Category.findByPk(categoryId)) {
+            return res.status(404).json({ error: "Category does not exists" })
         }
-
-        const isFoodExists = await knex("foodFoods")
-            .where({ name })
-            .whereNot({ id: foodId })
-            .select(1)
-            .first()
+        
+        const isFoodExists = await Food.findOne({
+            where: {
+                name,
+                id: {[Op.ne]: foodId}
+            }
+        })
 
         if (isFoodExists) {
             return res.status(409).json({ error: "Food already exists" })
         }
 
-        const isCategoryExists = await knex("foodCategories")
-            .where({ id: categoryId })
-            .select(1)
-            .first()
-        if (!isCategoryExists) {
-            return res.status(404).json({ error: "Category does not exists" })
+        const food = await Food.findByPk(foodId)
+
+        if (!food) {
+            return res.status(404).json({ error: "Food not found" })
         }
 
-        await knex("foodFoods")
-            .where({ id: foodId })
-            .update({
-                name,
-                price,
-                isVegan,
-                isFeatured,
-                categoryId,
-                imageUrl
-            })
+        food.name = name
 
-        res.json({ success: "Food updated successfully" })
+        food.price = price
+
+        food.isFeatured = isFeatured
+
+        food.isVegan = isVegan
+
+        food.imageUrl = imageUrl
+
+        food.categoryId = categoryId
+
+        await food.save()
+
+        res.json(food)
     }
 )
 
 router.delete("/:foodId", async (req, res) => {
     const { foodId } = req.params
 
-    await knex("foodFoods")
-        .where({ id: foodId })
-        .del()
+    const food = await Food.findByPk(foodId)
+
+    if(!food) {
+        return res.status(404).json({error: "Food not found"})
+    }
+
+    await food.destroy()
 
     res.json({ success: "Food deleted successfully" })
 })

@@ -1,25 +1,19 @@
 import { Router } from "express"
 import { body } from "express-validator"
-import knex from "../utils/database.js"
+import { User } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const deliveryAgents = await knex("foodUsers")
-        .select(
-            "id",
-            "name",
-            "email",
-            "createdAt",
-            "updatedAt",
-
-            knex("foodOrders")
-                .where("foodOrders.deliveryAgentId", "foodUsers.id")
-                .count()
-                .as("totalDeliveryDone")
-        )
-        .where("foodUsers.isDeliveryAgent", true)
+    const deliveryAgents = await User.findAll({
+        where: {
+            isDeliveryAgent: true
+        },
+        attributes: {
+            exclude: ["password"]
+        }
+    })
 
     res.json(deliveryAgents)
 })
@@ -38,39 +32,37 @@ router.post(
     async (req, res) => {
         const { email } = req.body
 
-        const isUserExists = await knex("foodUsers")
-            .where({ email })
-            .select(1)
-            .first()
+        const user = await User.findOne({where: {email}})
 
-        if (!isUserExists) {
-            return res.status(404).json({ error: "Email does not exists" })
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
         }
 
-        const isDeliveryAgentExists = await knex("foodUsers")
-            .where({ email })
-            .where({ isDeliveryAgent: true })
-            .select(1)
-            .first()
+        user.isDeliveryAgent = true 
 
-        if (await isDeliveryAgentExists) {
-            return res.status(409).json({ error: "Delivery boy already exists" })
-        }
+        await user.save()
 
-        await knex("foodUsers")
-            .where({ email })
-            .update({ isDeliveryAgent: true })
-
-        res.json({ success: "Delivery boy created successfully" })
+        res.json({ success: "Delivery agent created successfully" })
     }
 )
 
-router.delete("/:deliveryBoyId", async (req, res) => {
-    const { deliveryBoyId } = req.params
+router.delete("/:deliveryAgentId", async (req, res) => {
+    const { deliveryAgentId } = req.params
 
-    await knex("foodUsers")
-        .where({ id: deliveryBoyId })
-        .update({ isDeliveryAgent: false})
+    const user = await User.findOne({
+        where: {
+            id: deliveryAgentId,
+            isDeliveryAgent: true
+        }
+    })
+
+    if(!user){
+        return res.status(404).json({error: "Delivery agent not found"})
+    }
+
+    user.isDeliveryAgent = false 
+
+    await user.save()
 
     res.json({ success: "Delivery boy removed successfully" })
 })

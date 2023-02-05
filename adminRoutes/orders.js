@@ -1,26 +1,17 @@
 import express from "express"
 import { body, param } from "express-validator"
-import knex from "../utils/database.js"
+import { DeliveryAddress, Order, OrderedFood, PaymentDetails } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = express()
 
 router.get("/", async (req, res) => {
-    const orders = await knex("foodOrders")
-        .join("foodPaymentDetails", "foodPaymentDetails.orderId", "foodOrders.id")
-        .join("foodDeliveryAddresses", "foodDeliveryAddresses.orderId", "foodOrders.id")
-        .select(
-            "foodOrders.id",
-            "foodOrders.status",
-            "foodOrders.createdAt",
-            "foodDeliveryAddresses.mobile",
-
-            knex.raw(`CAST(ROUND(
-                foodPaymentDetails.foodPrice + 
-                foodPaymentDetails.deliveryFee + 
-                (foodPaymentDetails.foodPrice * foodPaymentDetails.gstPercentage / 100)
-            ) AS SIGNED) AS totalAmount`)
-        )
+    const orders = await Order.findAll({
+        include: {
+            model: PaymentDetails,
+            required: true
+        }
+    })
 
     res.json(orders)
 })
@@ -28,61 +19,27 @@ router.get("/", async (req, res) => {
 router.get("/:orderId", async (req, res) => {
     const { orderId } = req.params
 
-    const isOrderExists = await knex("foodOrders")
-        .where({ id: orderId })
-        .select(1)
-        .first()
-
-    if (!await isOrderExists) {
-        return res.status(404).json({ error: "Order not found" })
-    }
-
-    const foods = await knex("foodOrderedFoods")
-        .where({ orderId })
-        .select(
-            "id",
-            "name",
-            "qty"
-        )
-
-    const paymentDetails = await knex("foodPaymentDetails")
-        .where({ orderId })
-        .select(
-            "foodPrice",
-            "deliveryFee",
-            "gstPercentage",
-            knex.raw("CAST(ROUND(foodPrice + deliveryFee + (foodPrice * gstPercentage / 100)) AS SIGNED) AS totalAmount")
-        )
-        .first()
-
-    const deliveryAddress = await knex("foodDeliveryAddresses")
-        .where({ orderId })
-        .select(
-            "name",
-            "mobile",
-            "street",
-            "landmark",
-            "instruction"
-        )
-        .first()
-
-    const order = await knex("foodOrders")
-        .where({ id: orderId })
-        .select(
-            "id",
-            "status",
-            "deliveryAgentId",
-            "createdAt",
-            "updatedAt"
-        )
-        .first()
-
-    res.json({
-        order,
-        foods,
-        paymentDetails,
-        deliveryAddress
+    const order = await Order.findOne({
+        where: {
+            id: orderId
+        },
+        include: [
+            {
+                model: DeliveryAddress,
+                required: true
+            },
+            {
+                model: PaymentDetails,
+                required: true
+            },
+            {
+                model: OrderedFood,
+                required: true
+            }
+        ]
     })
+
+    res.json(order)
 })
 
 router.patch(
@@ -103,31 +60,17 @@ router.patch(
         const { orderId } = req.params
         const { deliveryAgentId, status } = req.body
 
-        const isOrderExists = await knex("foodOrders")
-            .where({ id: orderId })
-            .select(1)
-            .first()
+        const order = await Order.findByPk(orderId)
 
-        if (!isOrderExists) {
+        if(!order) {
             return res.status(404).json({ error: "Order not found" })
         }
 
-        const isDeliveryAgentExists = await knex("foodUsers")
-            .where({ id: deliveryAgentId })
-            .where({ isDeliveryAgent: true })
-            .select(1)
-            .first()
+        order.status = status
 
-        if (!isDeliveryAgentExists) {
-            return res.status(404).json({ error: "Delivery boy not found" })
-        }
+        order.deliveryAgentId = deliveryAgentId
 
-        await knex("foodOrders")
-            .where({ id: orderId })
-            .update({
-                status,
-                deliveryAgentId
-            })
+        await order.save()
 
         res.json({ success: "Order updated successfully" })
     }

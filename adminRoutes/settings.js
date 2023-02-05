@@ -1,22 +1,14 @@
 import { Router } from "express"
 import { body } from "express-validator"
-import knex from "../utils/database.js"
+import { Setting } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const settings = await knex("foodSettings")
-        .select(
-            "id", 
-            "deliveryFee", 
-            "gstPercentage",
-            "createdAt", 
-            "updatedAt"
-        )
-        .first()
+    const setting = await Setting.findOne()
 
-    res.json(settings)
+    res.json(setting)
 })
 
 router.patch(
@@ -31,12 +23,15 @@ router.patch(
     async (req, res) => {
         const { deliveryFee, gstPercentage } = req.body
 
-        await knex("foodSettings").update({
-            deliveryFee,
-            gstPercentage
-        })
+        const setting = await Setting.findOne()
 
-        res.json({ success: "Setting edited successfully" })
+        setting.deliveryFee = deliveryFee
+
+        setting.gstPercentage = gstPercentage
+
+        await setting.save()
+
+        res.json(setting)
     }
 )
 

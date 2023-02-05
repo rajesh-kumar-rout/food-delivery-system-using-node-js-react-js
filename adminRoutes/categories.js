@@ -1,25 +1,13 @@
 import { Router } from "express"
 import { body, param } from "express-validator"
+import { Op } from "sequelize"
+import { Category } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
-import knex from "../utils/database.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const categories = await knex("foodCategories")
-        .select(
-            "foodCategories.id",
-            "foodCategories.name",
-            "foodCategories.imageUrl",
-            "foodCategories.createdAt",
-            "foodCategories.updatedAt",
-
-            knex("foodFoods")
-                .where("foodFoods.categoryId", "foodCategories.id")
-                .count()
-                .as("totalFoods")
-        )
-        .orderBy("totalFoods", "desc")
+    const categories = await Category.findAll()
 
     res.json(categories)
 })
@@ -27,7 +15,11 @@ router.get("/", async (req, res) => {
 router.post(
     "/",
 
-    body("name").trim().isLength({ max: 30 }),
+    body("name")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
     body("imageUrl").isURL(),
 
@@ -36,21 +28,16 @@ router.post(
     async (req, res) => {
         const { name, imageUrl } = req.body
 
-        const isCategoryExists = await knex("foodCategories")
-            .where({ name })
-            .select(1)
-            .first()
-
-        if (isCategoryExists) {
-            return res.status(409).json({ message: "Category already exists" })
+        if (await Category.findOne({ name })) {
+            return res.status(409).json({ error: "Category already exists" })
         }
 
-        await knex("foodCategories").insert({
+        const category = await Category.create({
             name,
             imageUrl
         })
 
-        res.status(201).json({ message: "Category created successfully" })
+        res.status(201).json(category)
     }
 )
 
@@ -59,7 +46,11 @@ router.patch(
 
     param("categoryId").isInt(),
 
-    body("name").trim().isLength({ max: 30 }),
+    body("name")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
     body("imageUrl").optional().isURL(),
 
@@ -67,43 +58,47 @@ router.patch(
         const { categoryId } = req.params
         const { name, imageUrl } = req.body
 
-        const category = await knex("foodCategories")
-            .where({ id: categoryId })
-            .first()
-
-        if (!category) {
-            return res.status(404).json({ message: "Category not found" })
-        }
-
-        const isCategoryExists = await knex("foodCategories")
-            .where({ name })
-            .whereNot({ id: categoryId })
-            .select(1)
-            .first()
+        const isCategoryExists = await Category.findOne({
+            where: {
+                [Op.and]: {
+                    name,
+                    id: { [Op.ne]: categoryId }
+                }
+            }
+        })
 
         if (isCategoryExists) {
-            return res.status(409).json({ message: "Category already exists" })
+            return res.status(409).json({ error: "Category already exists" })
         }
 
-        await knex("foodCategories")
-            .where({ id: categoryId })
-            .update({
-                name,
-                imageUrl
-            })
+        const category = await Category.findByPk(categoryId)
 
-        res.json({ message: "Category edited successfully" })
+        if (!category) {
+            return res.status(404).json({ error: "Category not found" })
+        }
+
+        category.name = name
+
+        category.imageUrl = imageUrl
+
+        await category.save()
+
+        res.json(category)
     }
 )
 
 router.delete("/:categoryId", async (req, res) => {
     const { categoryId } = req.params
 
-    await knex("foodCategories")
-        .where({ id: categoryId })
-        .del()
+    const category = await Category.findByPk(categoryId)
 
-    res.json({ message: "Category deleted successfully" })
+    if (!category) {
+        return res.status(404).json({ error: "Category not found" })
+    }
+
+    await category.destroy()
+
+    res.json(category)
 })
 
 export default router
