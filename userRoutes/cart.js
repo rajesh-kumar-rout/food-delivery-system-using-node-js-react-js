@@ -1,7 +1,8 @@
 import { Router } from "express"
 import { body } from "express-validator"
-import knex from "../utils/database.js"
 import { checkValidationError } from "../utils/validator.js"
+import { Cart, Food, Setting } from "../models/model.js"
+import { Op } from "sequelize"
 
 const router = Router()
 
@@ -10,97 +11,106 @@ router.post(
 
     body("foodId").isInt().toInt(),
 
-    body("qty").isInt().toInt(),
+    body("quantity").isInt().toInt(),
 
     checkValidationError,
 
     async (req, res) => {
-        const { currentUserId } = req
-        const { foodId, qty } = req.body
+        const { _id } = req
+        const { foodId, quantity } = req.body
 
-        const isFoodExists = await knex("foodFoods")
-            .where({ id: foodId })
-            .select(1)
-            .first()
-
-        if (!isFoodExists) {
-            return res.status(404).json({ error: "Food not found" })
-        }
-
-        const isCartItemExists = await knex("foodCart")
-            .where({ userId: currentUserId })
-            .where({ foodId })
-            .select(1)
-            .first()
-
-        if (isCartItemExists) {
-            await knex("foodCart")
-                .where({ userId: currentUserId })
-                .where({ foodId })
-                .update({ qty })
-
-            return res.json({ success: "Cart updated" })
-        }
-
-        await knex("foodCart").insert({
-            foodId,
-            userId: currentUserId,
-            qty
+        let cart = await Cart.findOne({
+            where: {
+                [Op.and]: {
+                    foodId,
+                    userId: _id
+                }
+            }
         })
 
-        res.status(201).json({ success: "Cart created" })
+        if(cart) {
+            cart.quantity = quantity
+
+            await cart.save()
+
+            return res.status(201).json(cart)
+        }
+
+        cart = await Cart.create({
+            userId: _id,
+            foodId,
+            quantity
+        }) 
+
+        res.json(cart)
     }
 )
 
 router.get("/pricing", async (req, res) => {
-    const { currentUserId } = req
+    const { _id } = req
 
-    const { foodPrice } = await knex("foodCart")
-        .where({ userId: currentUserId })
-        .join("foodFoods", "foodFoods.id", "foodCart.foodId")
-        .select(knex.raw("CAST(SUM(foodFoods.price * foodCart.qty) AS SIGNED) AS foodPrice"))
-        .first()
+    const cart = await Cart.findAll({
+        where: {
+            userId: _id
+        },
+        include: {
+            model: Food,
+            as: "food"
+        }
+    })
 
-    const settings = await knex("foodSettings").first()
+    const setting = await Setting.findOne()
 
-    const gstAmount = Math.round(foodPrice * (settings.gstPercentage / 100))
+    let foodPrice = 0
 
-    const totalAmount = settings.deliveryFee + gstAmount + foodPrice
+    cart.map(cartItem => {
+        foodPrice += cartItem.food.price * cartItem.quantity
+    })
+
+    const gstAmount = Math.round(foodPrice * setting.gstPercentage / 100)
+
+    const totalAmount = foodPrice + gstAmount + setting.deliveryFee
 
     res.json({
         foodPrice,
-        deliveryFee: settings.deliveryFee,
-        gstPercentage: settings.gstPercentage,
         gstAmount,
-        totalAmount
+        totalAmount,
+        gstPercentage: setting.gstPercentage,
+        deliveryFee: setting.deliveryFee
     })
 })
 
 router.get("/", async (req, res) => {
-    const { currentUserId } = req
+    const { _id } = req
 
-    const foods = await knex("foodCart")
-        .where({ userId: currentUserId })
-        .join("foodFoods", "foodFoods.id", "foodCart.foodId")
-        .select(
-            "foodCart.foodId",
-            "foodCart.qty",
-            "foodFoods.name",
-            "foodFoods.price",
-            "foodFoods.imageUrl"
-        )
+    const foods = await Cart.findAll({
+        where: {
+            userId: _id
+        },
+        include: {
+            model: Food,
+            as: "food"
+        }
+    })
 
     res.json(foods)
 })
 
 router.delete("/:foodId", async (req, res) => {
-    const { currentUserId } = req
+    const { _id } = req
+
     const { foodId } = req.params
 
-    await knex("foodCart")
-        .where({ userId: currentUserId })
-        .where({ foodId })
-        .del()
+    const cart = await Cart.findOne({
+        userId: _id,
+        foodId
+    })
+
+    if(!cart) {
+        return res.status(404).json({error: "Food not found in cart"})
+    }
+
+    await cart.destroy()
 
     res.json({ success: "Food removed from cart successfully" })
 })

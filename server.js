@@ -12,10 +12,10 @@ import adminSettings from "./adminRoutes/settings.js"
 import adminSliders from "./adminRoutes/sliders.js"
 import { authenticate, isAdmin, isAuthenticated } from "./middlewares/authentication.js"
 import userAuth from "./userRoutes/auth.js"
-// import userCart from "./userRoutes/cart.js"
+import userCart from "./userRoutes/cart.js"
 import userCategories from "./userRoutes/categories.js"
 import userFoods from "./userRoutes/foods.js"
-// import userOrders from "./userRoutes/orders.js"
+import userOrders from "./userRoutes/orders.js"
 import userSliders from "./userRoutes/sliders.js"
 import {Category} from "./models/model.js"
 config()
@@ -39,8 +39,8 @@ app.use("/api/admin", adminindex)
 app.use("/api/categories", userCategories)
 app.use("/api/foods", userFoods)
 app.use("/api/sliders", userSliders)
-// app.use("/api/orders", isAuthenticated, userOrders)
-// app.use("/api/cart", isAuthenticated, userCart)
+app.use("/api/orders", isAuthenticated, userOrders)
+app.use("/api/cart", isAuthenticated, userCart)
 app.use("/api/auth", userAuth)
 
 app.listen(process.env.PORT, () => {

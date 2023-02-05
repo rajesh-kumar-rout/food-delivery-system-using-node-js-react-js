@@ -10,35 +10,77 @@ import Slider from "./slider.js"
 import Setting from "./setting.js"
 import sequelize from "../utils/sequelize.js"
 
-Category.hasMany(Food)
+Category.hasMany(Food, {
+    foreignKey: "categoryId",
+    onDelete: "cascade",
+    onUpdate: "cascade"
+})
 
-Food.belongsTo(Category)
+Food.belongsTo(Category, {
+    foreignKey: "categoryId"
+})
 
-User.hasMany(Cart)
+User.hasMany(Cart, {
+    foreignKey: "userId",
+    onDelete: "cascade",
+    onUpdate: "cascade"
+})
 
-Cart.belongsTo(User)
+Cart.belongsTo(User, {
+    foreignKey: "userId"
+})
 
-Cart.belongsTo(Food)
+Food.hasMany(Cart, {
+    foreignKey: "foodId",
+    onDelete: "cascade",
+    onUpdate: "cascade"
+})
 
-User.hasMany(Order)
+Cart.belongsTo(Food, {
+    foreignKey: "foodId",
+    as: "food"
+})
 
-Order.belongsTo(User)
+Order.Foods = Order.hasMany(OrderedFood, {
+    foreignKey: "orderId",
+    onDelete: "cascade",
+    onUpdate: "cascade",
+    as: "foods"
+})
 
-Order.hasMany(OrderedFood)
+OrderedFood.belongsTo(Order, {
+    foreignKey: "orderId"
+})
 
-OrderedFood.belongsTo(Order)
+Order.DeliveryAddress = Order.hasOne(DeliveryAddress, {
+    foreignKey: "orderId",
+    onDelete: "cascade",
+    onUpdate: "cascade",
+    as: "deliveryAddress"
+})
 
-Order.hasOne(DeliveryAddress)
+DeliveryAddress.belongsTo(Order, {
+    foreignKey: "orderId"
+})
 
-Order.belongsTo(User, {
+User.hasMany(Order, {
     foreignKey: "deliveryAgentId"
 })
 
-DeliveryAddress.belongsTo(Order)
+Order.belongsTo(User, {
+    foreignKey: "userId"
+})
 
-Order.hasOne(PaymentDetails)
+Order.PaymentDetails = Order.hasOne(PaymentDetails, {
+    foreignKey: "orderId",
+    onDelete: "cascade",
+    onUpdate: "cascade",
+    as: "paymentDetails"
+})
 
-PaymentDetails.belongsTo(Order)
+PaymentDetails.belongsTo(Order, {
+    foreignKey: "orderId"
+})
 
 export {
     Category,

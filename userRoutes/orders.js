@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { body } from "express-validator"
-import knex from "../utils/database.js"
+import { Op } from "sequelize"
+import { Cart, DeliveryAddress, Food, Order, OrderedFood, PaymentDetails, Setting } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
@@ -8,178 +9,150 @@ const router = Router()
 router.post(
     "/",
 
-    body("name").trim().isLength({ max: 30 }),
+    body("name")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
     body("mobile").isInt(),
 
-    body("street").trim().isLength({ max: 30 }),
+    body("street")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
-    body("landmark").trim().isLength({ max: 30 }),
+    body("landmark")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
     body("instruction")
         .optional()
         .trim()
-        .isLength({ max: 255 })
-        .default(""),
+        .isLength({ max: 255 }),
 
     checkValidationError,
 
     async (req, res) => {
-        const { currentUserId } = req
-        const { name, mobile, street, landmark, instruction } = req.body
+        const { _id } = req
 
-        const cart = await knex("foodCart")
-            .where({ userId: currentUserId })
-            .join("foodFoods", "foodFoods.id", "foodCart.foodId")
-            .select(
-                "foodCart.qty",
-                "foodFoods.name",
-                "foodFoods.price"
-            )
+        const cart = await Cart.findAll({
+            where: {
+                userId: _id
+            },
+            include: {
+                model: Food,
+                as: "food"
+            }
+        })
 
-        if (!cart?.length) {
-            return res.status(422).json({ error: "Your cart is empty" })
+        if (cart.length === 0) {
+            return res.status(404).json({ error: "Cart not found" })
         }
 
-        const [orderId] = await knex("foodOrders").insert({
-            userId: currentUserId,
-            status: "Placed"
-        })
-
-        await knex("foodDeliveryAddresses").insert({
-            orderId,
-            name,
-            mobile,
-            street,
-            landmark,
-            instruction
-        })
+        const setting = await Setting.findOne()
 
         let foodPrice = 0
 
-        for (const cartItem of cart) {
-            await knex("foodOrderedFoods").insert({
-                orderId,
-                name: cartItem.name,
-                price: cartItem.price,
-                qty: cartItem.qty
-            })
-
-            foodPrice += cartItem.price
-        }
-
-        const settings = await knex("foodSettings").first()
-
-        await knex("foodPaymentDetails").insert({
-            orderId,
-            foodPrice,
-            deliveryFee: settings.deliveryFee,
-            gstPercentage: settings.gstPercentage
+        cart.forEach(cartItem => {
+            foodPrice += cartItem.food.price * cartItem.quantity
         })
 
-        await knex("foodCart")
-            .where({ userId: currentUserId })
-            .del()
+        const gstAmount = Math.round(foodPrice * (setting.gstAmount / 100))
 
-        res.status(201).json({ orderId })
+        const totalAmount = gstAmount + setting.deliveryFee + foodPrice
+
+        const order = await Order.create(
+            {
+                status: "Preparing",
+                userId: _id,
+                foods: cart.map(cartItem => ({
+                    name: cartItem.food.name,
+                    price: cartItem.food.price,
+                    quantity: cartItem.quantity
+                })),
+                deliveryAddress: req.body,
+                paymentDetails: {
+                    foodPrice,
+                    gstAmount,
+                    gstPercentage: setting.gstPercentage,
+                    deliveryFee: setting.deliveryFee,
+                    totalAmount
+                }
+            },
+            {
+                include: [
+                    {association: Order.DeliveryAddress, as: "deliveryAddress"},
+                    {association: Order.PaymentDetails, as: "paymentDetails"},
+                    {
+                        association: Order.Foods,
+                        as: 'food'
+                      }
+                ]
+            }
+        )
+
+        res.status(201).json(order)
     }
 )
 
 router.get("/", async (req, res) => {
-    const { currentUserId } = req
+    const { _id } = req
 
-    const orders = await knex("foodOrders")
-        .where({ userId: currentUserId })
-        .select(
-            "foodOrders.id",
-            "foodOrders.status",
-            "foodOrders.createdAt",
-            "foodOrders.updatedAt",
-
-            knex("foodOrderedFoods")
-                .whereColumn("foodOrderedFoods.orderId", "foodOrders.id")
-                .count()
-                .as("totalFoods"),
-
-            knex("foodPaymentDetails")
-                .whereColumn("foodPaymentDetails.orderId", "foodOrders.id")
-                .select(knex.raw(`
-                    CAST(
-                        ROUND(
-                            foodPaymentDetails.foodPrice +
-                            foodPaymentDetails.deliveryFee + 
-                            foodPaymentDetails.foodPrice * (foodPaymentDetails.gstPercentage / 100)
-                        ) 
-                        AS SIGNED
-                    )
-                `))
-                .first()
-                .as("totalAmount")
-        )
-        .orderBy("foodOrders.id", "desc")
+    const orders = await Order.findAll({
+        where: {
+            userId: _id
+        },
+        include: [
+            {
+                model: OrderedFood,
+                as: "foods"
+            },
+            {
+                model: PaymentDetails,
+                as: "paymentDetails"
+            }
+        ],
+        order: [
+            ["id", "desc"]
+        ]
+    })
 
     res.json(orders)
 })
 
-router.get(
-    "/:orderId",
+router.get("/:orderId", async (req, res) => {
+    const { _id } = req
 
-    async (req, res) => {
-        const { currentUserId } = req
+    const { orderId } = req.params
 
-        const { orderId } = req.params
+    const order = await Order.findOne({
+        where: {
+            [Op.and]: {
+                userId: _id,
+                id: orderId
+            }
+        },
+        include: [
+            {
+                model: DeliveryAddress,
+                as: "deliveryAddress"
+            },
+            {
+                model: PaymentDetails,
+                as: "paymentDetails"
+            },
+            {
+                model: OrderedFood,
+                as: "foods"
+            }
+        ]
+    })
 
-        const isOrderExists = await knex("foodOrders")
-            .where({ id: orderId })
-            .where({ userId: currentUserId })
-            .select(1)
-            .first()
-
-        if (!isOrderExists) {
-            return res.status(404).json({ error: "Order not found" })
-        }
-
-        const foods = await knex("foodOrderedFoods")
-            .where({ orderId })
-            .select(
-                "id",
-                "name",
-                "price",
-                "qty",
-            )
-
-        const deliveryAddress = await knex("foodDeliveryAddresses")
-            .where({ orderId })
-            .select(
-                "id",
-                "name",
-                "mobile",
-                "street",
-                "landmark",
-                "instruction"
-            )
-            .first()
-
-        const paymentDetails = await knex("foodPaymentDetails")
-            .where({ orderId })
-            .select(
-                "id",
-                "foodPrice",
-                "deliveryFee",
-                "gstPercentage"
-            )
-            .first()
-
-        paymentDetails.gstAmount = Math.round(paymentDetails.foodPrice * (paymentDetails.gstPercentage / 100))
-
-        paymentDetails.totalAmount = paymentDetails.foodPrice + paymentDetails.deliveryFee + paymentDetails.gstAmount
-
-        res.json({
-            foods,
-            deliveryAddress,
-            paymentDetails
-        })
-    }
-)
+    res.json(order)
+})
 
 export default router

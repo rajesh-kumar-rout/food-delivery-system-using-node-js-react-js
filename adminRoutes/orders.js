@@ -1,6 +1,7 @@
 import express from "express"
 import { body, param } from "express-validator"
-import { DeliveryAddress, Order, OrderedFood, PaymentDetails } from "../models/model.js"
+import { Op } from "sequelize"
+import { DeliveryAddress, Order, OrderedFood, PaymentDetails, User } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = express()
@@ -9,7 +10,7 @@ router.get("/", async (req, res) => {
     const orders = await Order.findAll({
         include: {
             model: PaymentDetails,
-            required: true
+            as: "paymentDetails"
         }
     })
 
@@ -26,15 +27,15 @@ router.get("/:orderId", async (req, res) => {
         include: [
             {
                 model: DeliveryAddress,
-                required: true
+                as: "deliveryAddress"
             },
             {
                 model: PaymentDetails,
-                required: true
+                as: "paymentDetails"
             },
             {
                 model: OrderedFood,
-                required: true
+                as: "foods"
             }
         ]
     })
@@ -62,8 +63,21 @@ router.patch(
 
         const order = await Order.findByPk(orderId)
 
-        if(!order) {
+        if (!order) {
             return res.status(404).json({ error: "Order not found" })
+        }
+
+        const deliveryAgent = await User.findOne({
+            where: {
+                [Op.and]: {
+                    id: deliveryAgentId,
+                    isDeliveryAgent: true
+                }
+            }
+        })
+
+        if (!deliveryAgent) {
+            return res.status(404).json({ error: "Delivery agent not found" })
         }
 
         order.status = status
