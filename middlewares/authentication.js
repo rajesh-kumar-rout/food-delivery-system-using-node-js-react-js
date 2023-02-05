@@ -1,23 +1,32 @@
-import { config } from "dotenv"
-import knex from "../utils/database.js"
+import dotenv from "dotenv"
+import jwt from "jsonwebtoken"
 
-config()
+dotenv.config()
 
 export async function authenticate(req, res, next) {
-    const token = req.headers.authorization ?? null
+    let { authorization } = req.headers 
 
-    const tokenRow = await knex("foodTokens")
-        .where({ token })
-        .first()
+    if(authorization && authorization.startsWith("Bearer ")) {
+        authorization = authorization.substring(7, authorization.length)
+    }
 
-    if (tokenRow) {
-        req.currentUserId = tokenRow.userId
+    try {
+        
+        const { _id, isAdmin } = jwt.verify(authorization, process.env.AUTH_TOKEN_SECRECT)
+
+        req._id = _id 
+
+        req.isAdmin = isAdmin 
+
+    } catch {
+        
     }
 
     next()
 }
+
 export async function isAuthenticated(req, res, next) {
-    if (!req.currentUserId) {
+    if (!req._id) {
         return res.status(401).json({ error: "Authentication failed" })
     }
 
@@ -25,16 +34,8 @@ export async function isAuthenticated(req, res, next) {
 }
 
 export async function isAdmin(req, res, next) {
-    const currentUserId = req.currentUserId ?? null
-
-    const isAdmin = await knex("foodUsers")
-        .where({ id: currentUserId })
-        .where({ isAdmin: true })
-        .select(1)
-        .first()
-
-    if (!isAdmin) {
-        return res.status(403).json({ error: "Access denied" })
+    if (!req.isAdmin) {
+        return res.status(401).json({ error: "Authentication failed" })
     }
 
     next()

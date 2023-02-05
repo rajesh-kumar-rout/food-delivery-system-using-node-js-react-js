@@ -1,28 +1,25 @@
 import bcrypt from "bcrypt"
-import crypto from "crypto"
 import { Router } from "express"
 import { body } from "express-validator"
+import jwt from "jsonwebtoken"
+import { Op } from "sequelize"
 import { isAuthenticated } from "../middlewares/authentication.js"
-import knex from "../utils/database.js"
+import { User } from "../models/model.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
 
 router.get("/", async (req, res) => {
-    const token = req.headers.authorization ?? null
+    const { _id } = req 
 
-    const user = await knex("foodTokens")
-        .where({ token })
-        .join("foodUsers", "foodUsers.id", "foodTokens.userId")
-        .select(
-            "foodUsers.id",
-            "foodUsers.name",
-            "foodUsers.email",
-            "foodUsers.isAdmin",
-            "foodUsers.createdAt",
-            "foodUsers.updatedAt",
-        )
-        .first()
+    const user = await User.findOne({
+        where: {
+            id: _id
+        },
+        attributes: {
+            exclude: ["password"]
+        }
+    })
 
     res.json(user)
 })
@@ -39,29 +36,35 @@ router.post(
     async (req, res) => {
         const { email, password } = req.body
 
-        const user = await knex("foodUsers")
-            .where({ email })
-            .first()
+        const user = await User.findOne({ where: { email } })
 
         if (!(user && await bcrypt.compare(password, user.password))) {
             return res.status(422).json({ error: "Invalid email or password" })
         }
 
-        const token = crypto.randomUUID()
+        const authToken = jwt.sign(
+            {
+                _id: user.id,
+                isAdmin: user.isAdmin
+            },
+            process.env.AUTH_TOKEN_SECRECT,
+            {
+                expiresIn: "72h"
+            }
+        )
 
-        await knex("foodTokens").insert({
-            userId: user.id,
-            token
-        })
-
-        res.json({ token })
+        res.json({ authToken })
     }
 )
 
 router.post(
     "/register",
 
-    body("name").trim().isLength({ max: 30 }),
+    body("name")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
     body("email")
         .trim()
@@ -76,42 +79,46 @@ router.post(
     async (req, res) => {
         const { name, password, email } = req.body
 
-        const isEmailExists = await knex("foodUsers")
-            .where({ email })
-            .select(1)
-            .first()
-
-        if (isEmailExists) {
+        if (await User.findOne({ where: { email } })) {
             return res.status(409).json({ error: "Email already exists" })
         }
 
-        const [userId] = await knex("foodUsers").insert({
+        const user = await User.create({
             name,
             email,
             password: await bcrypt.hash(password, 10)
         })
 
-        const token = crypto.randomUUID()
+        const authToken = jwt.sign(
+            {
+                _id: user.id,
+                isAdmin: false
+            },
+            process.env.AUTH_TOKEN_SECRECT,
+            {
+                expiresIn: "72h"
+            }
+        )
 
-        await knex("foodTokens").insert({
-            userId,
-            token
-        })
-
-        res.json({ token })
+        res.json({ authToken })
     }
 )
 
 router.patch(
-    "/edit-account",
+    "/edit-profile",
 
     isAuthenticated,
 
-    body("name").trim().isLength({ max: 30 }),
+    body("name")
+        .isString()
+        .trim()
+        .notEmpty()
+        .isLength({ max: 30 }),
 
     body("email")
-        .isEmail()
+        .trim()
         .normalizeEmail()
+        .isEmail()
         .isLength({ max: 30 }),
 
     checkValidationError,
@@ -119,24 +126,28 @@ router.patch(
     async (req, res) => {
         const { name, email } = req.body
 
-        const { currentUserId } = req
+        const { _id } = req
 
-        const isEmailExists = await knex("foodUsers")
-            .where({ email })
-            .whereNot({ id: currentUserId })
-            .select(1)
-            .first()
+        const isEmailExists = await User.findOne({
+            where: {
+                [Op.and]: {
+                    email,
+                    id: {[Op.ne]: _id}
+                }
+            }
+        })
 
         if (isEmailExists) {
             return res.status(409).json({ error: "Email already exists" })
         }
 
-        await knex("foodUsers")
-            .where({ id: currentUserId })
-            .update({
-                name,
-                email
-            })
+        const user = await User.findByPk(_id)
+
+        user.email = email
+
+        user.name = name
+
+        await user.save()
 
         res.json({ success: "Account edited successfully" })
     }
@@ -156,34 +167,20 @@ router.patch(
     async (req, res) => {
         const { oldPassword, newPassword } = req.body
 
-        const { currentUserId } = req
+        const { _id } = req
 
-        const user = await knex("foodUsers")
-            .where({ id: currentUserId })
-            .first()
+        const user = await User.findByPk(_id)
 
         if (!await bcrypt.compare(oldPassword, user.password)) {
             return res.status(422).json({ error: "Old password does not match" })
         }
 
-        await knex("foodUsers")
-            .where({ id: currentUserId })
-            .update({
-                password: await bcrypt.hash(newPassword, 10)
-            })
+        user.password = await bcrypt.hash(newPassword, 10)
+
+        await user.save()
 
         res.json({ success: "Password changed successfully" })
     }
 )
-
-router.delete("/logout", isAuthenticated, async (req, res) => {
-    const token = req.headers.authorization ?? null
-
-    await knex("foodTokens")
-        .where({ token })
-        .del()
-
-    res.json({ success: "Logout successfully" })
-})
 
 export default router
