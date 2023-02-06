@@ -1,17 +1,19 @@
 import Loader from "components/Loader"
+import moment from "moment/moment"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import axios from "utils/axios"
+import { currency } from "utils/functions"
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([])
-    const [isFetching, setIsFetching] = useState(false)
+    const [isFetching, setIsFetching] = useState(true)
 
     const fetchOrders = async () => {
         const { data } = await axios.get("/orders")
-
+console.log(data)
         setOrders(data)
-        
+
         setIsFetching(false)
     }
 
@@ -33,24 +35,27 @@ export default function OrdersPage() {
                             <tr>
                                 <th>ID</th>
                                 <th>Total Amount</th>
-                                <th>Total Foods</th>
                                 <th>Status</th>
                                 <th>Ordered At</th>
                                 <th>View</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {orders.map(order => (
+                            {orders.length === 0 && (
                                 <tr>
+                                    <td colSpan={6} className="text-sm text-muted">No Orders Found</td>
+                                </tr>
+                            )}
+                            {orders.map(order => (
+                                <tr key={order.id}>
                                     <td>{order.id}</td>
-                                    <td>Rs. {order.totalAmount}</td>
-                                    <td>{order.totalFoods}</td>
+                                    <td>{currency.format(order.paymentDetails.totalAmount)}</td>
                                     <td>
                                         <p className={`badge badge-success`}>
                                             {order.status}
                                         </p>
                                     </td>
-                                    <td>{order.createdAt}</td>
+                                    <td>{moment(order.createdAt).format("D MMM GG h:m A")}</td>
                                     <td>
                                         <Link to={`/auth/orders/${order.id}`} className="btn btn-primary btn-sm">
                                             View

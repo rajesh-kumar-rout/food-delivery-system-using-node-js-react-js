@@ -1,3 +1,4 @@
+import moment from "moment"
 import { useEffect, useState } from "react"
 import { MdDelete } from "react-icons/md"
 import swal from "sweetalert"
@@ -51,8 +52,6 @@ export default function DeliveryAgentsPage() {
                             <th>ID</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Mobile</th>
-                            <th>Delivery Done</th>
                             <th>Created At</th>
                             <th>Action</th>
                         </tr>
@@ -63,9 +62,7 @@ export default function DeliveryAgentsPage() {
                                 <td>{deliveryAgent.id}</td>
                                 <td>{deliveryAgent.name}</td>
                                 <td>{deliveryAgent.email}</td>
-                                <td>{deliveryAgent.mobile}</td>
-                                <td>{deliveryAgent.totalDeliveryDone}</td>
-                                <td>{deliveryAgent.createdAt}</td>
+                                <td>{moment(deliveryAgent.createdAt).format("D MMM GG h:m A")}</td>
                                 <td>
                                     <button onClick={() => handleDeleteDeliveryAgent(deliveryAgent.id)} className="btn btn-icon btn-danger ml-1">
                                         <MdDelete size={24} />

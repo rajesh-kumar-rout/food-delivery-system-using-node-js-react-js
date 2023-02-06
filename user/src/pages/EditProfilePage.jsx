@@ -3,7 +3,7 @@ import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useContext } from "react"
 import { toast } from "react-toastify"
 import axios from "utils/axios"
-import { updateProfileSchema } from "utils/validationSchema"
+import { changePasswordSchema, updateProfileSchema } from "utils/validationSchema"
 
 export default function EditProfilePage() {
     const { currentUser, setCurrentUser } = useContext(AuthContext)
@@ -12,7 +12,7 @@ export default function EditProfilePage() {
         setSubmitting(true)
 
         try {
-            await axios.patch("/auth/edit-account", values)
+            await axios.patch("/auth/edit-profile", values)
 
             toast.success("Account updated successfully")
 
@@ -34,7 +34,7 @@ export default function EditProfilePage() {
 
         try {
             await axios.patch("/auth/change-password", values)
-            
+
             toast.success("Password changed successfully")
 
             resetForm()
@@ -85,6 +85,11 @@ export default function EditProfilePage() {
                                     className="form-control"
                                     name="email"
                                 />
+                                <ErrorMessage
+                                    component="p"
+                                    name="email"
+                                    className="form-error"
+                                />
                             </div>
 
                             <button
@@ -105,17 +110,18 @@ export default function EditProfilePage() {
                     newPassword: "",
                     confirmNewPassword: ""
                 }}
-                // validationSchema={validationSchema}
+                validationSchema={changePasswordSchema}
                 onSubmit={handlePasswordChange}
             >
                 {({ isSubmitting }) => (
-                    <Form className="card max-w-500 mx-auto mt-4" style={{marginTop: 16}}>
+                    <Form className="card max-w-500 mx-auto mt-4" style={{ marginTop: 16 }}>
                         <p className="card-header card-title">Change Password</p>
 
                         <div className="card-body">
                             <div className="form-group">
                                 <label htmlFor="oldPassword" className="form-label">Old Password</label>
                                 <Field
+                                    type="password"
                                     id="oldPassword"
                                     className="form-control"
                                     name="oldPassword"
@@ -126,6 +132,7 @@ export default function EditProfilePage() {
                             <div className="form-group">
                                 <label htmlFor="newPassword" className="form-label">New Password</label>
                                 <Field
+                                    type="password"
                                     id="newPassword"
                                     className="form-control"
                                     name="newPassword"
@@ -136,6 +143,7 @@ export default function EditProfilePage() {
                             <div className="form-group">
                                 <label htmlFor="confirmNewPassword" className="form-label">Confirm New Password</label>
                                 <Field
+                                    type="password"
                                     id="confirmNewPassword"
                                     className="form-control"
                                     name="confirmNewPassword"

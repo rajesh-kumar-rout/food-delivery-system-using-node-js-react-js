@@ -27,10 +27,26 @@
     max-height: min-content;
 }
 
+.mt-0 {
+    margin-top: 0px;
+}
+
 .mt-2{
     margin-top: 8px;
 }
 
 .mt-4 {
     margin-top: 16px;
+}
+
+.h-screen {
+    height: 100vh;
+}
+
+.text-sm {
+    font-size: 14px;
+}
+
+.text-muted {
+    color: var(--gray600);
 }

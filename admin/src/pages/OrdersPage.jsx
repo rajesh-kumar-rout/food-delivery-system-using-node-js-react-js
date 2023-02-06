@@ -1,8 +1,10 @@
+import moment from "moment"
 import { useEffect, useState } from "react"
 import { MdVisibility } from "react-icons/md"
 import { Link } from "react-router-dom"
 import Loader from "../components/Loader"
 import axios from "../utils/axios"
+import { currency } from "../utils/functions"
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([])
@@ -10,7 +12,7 @@ export default function OrdersPage() {
 
     const fetchOrders = async () => {
         const { data } = await axios.get("/orders")
-
+console.log(data)
         setOrders(data)
 
         setIsLoading(false)
@@ -32,7 +34,6 @@ export default function OrdersPage() {
                     <thead>
                         <tr>
                             <th>Order ID</th>
-                            <th>Mobile</th>
                             <th>Total Amount</th>
                             <th>Status</th>
                             <th>Placed At</th>
@@ -43,12 +44,11 @@ export default function OrdersPage() {
                         {orders.map(order => (
                             <tr key={order.id}>
                                 <td>{order.id}</td>
-                                <td>{order.mobile}</td>
-                                <td>{order.totalAmount}</td>
+                                <td>{currency.format(order.paymentDetails.totalAmount)}</td>
                                 <td>
                                     <span>{order.status}</span>
                                 </td>
-                                <td>{order.createdAt}</td>
+                                <td>{moment(order.createdAt).format("D MMM GG h:m A")}</td>
                                 <td>
                                     <Link className="btn btn-icon btn-primary" to={`/orders/${order.id}`}>
                                         <MdVisibility size={24} />

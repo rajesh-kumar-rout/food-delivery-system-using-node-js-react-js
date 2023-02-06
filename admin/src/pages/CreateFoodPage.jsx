@@ -60,8 +60,7 @@ export default function CreateFoodPage() {
         >
             {({
                 values,
-                isSubmitting,
-                setFieldValue
+                isSubmitting
             }) => (
 
                 <Form className="card form">

@@ -23,8 +23,9 @@ export default function NavBar() {
 
     const handleLogout = async(event) => {
         event.preventDefault()
-        await axios.delete("/auth/logout")
-        localStorage.removeItem("token")
+
+        localStorage.removeItem("authToken")
+
         window.location.href = "/"
     }
 

@@ -1,8 +1,10 @@
+import moment from "moment"
 import { useEffect, useState } from "react"
 import { MdEdit } from "react-icons/md"
 import { Link } from "react-router-dom"
 import Loader from "../components/Loader"
 import axios from "../utils/axios"
+import { currency } from "../utils/functions"
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState({})
@@ -39,9 +41,9 @@ export default function SettingsPage() {
                     </thead>
                     <tbody>
                         <tr>
-                            <td>{settings.deliveryFee}</td>
+                            <td>{currency.format(settings.deliveryFee)}</td>
                             <td>{settings.gstPercentage}</td>
-                            <td>{settings.updatedAt}</td>
+                            <td>{moment(settings.updatedAt).format("D MMM GG h:m A")}</td>
                             <td>
                                 <Link
                                     to="/settings/edit"

@@ -33,16 +33,16 @@ console.log(data);
                 <p className="home-label">Total Category</p>
             </div>
             <div className="home-card">
+                <h1 className="home-count">{data.totalSliders}</h1>
+                <p className="home-label">Total Sliders</p>
+            </div>
+            <div className="home-card">
                 <h1 className="home-count">{data.totalPreparingOrders}</h1>
                 <p className="home-label">Total Preparing Orders</p>
             </div>
             <div className="home-card">
-                <h1 className="home-count">{data.totalPreparedOrders}</h1>
-                <p className="home-label">Total Prepared Orders</p>
-            </div>
-            <div className="home-card">
-                <h1 className="home-count">{data.totalCustomers}</h1>
-                <p className="home-label">Total Customers</p>
+                <h1 className="home-count">{data.totalOrders}</h1>
+                <p className="home-label">Total Orders</p>
             </div>
             <div className="home-card">
                 <h1 className="home-count">{data.totalDeliveredOrders}</h1>

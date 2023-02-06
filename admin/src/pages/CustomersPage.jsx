@@ -1,3 +1,4 @@
+import moment from "moment"
 import { useEffect } from "react"
 import { useState } from "react"
 import axios from "../utils/axios"
@@ -29,7 +30,6 @@ export default function CustomersPage() {
                             <th>ID</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Mobile</th>
                             <th>Created At</th>
                         </tr>
                     </thead>
@@ -39,8 +39,7 @@ export default function CustomersPage() {
                                 <td>{customer.id}</td>
                                 <td>{customer.name}</td>
                                 <td>{customer.email}</td>
-                                <td>{customer.mobile}</td>
-                                <td>{customer.createdAt}</td>
+                                <td>{moment(customer.createdAt).format("D MMM GG h:m A")}</td>
                             </tr>
                         ))}
                     </tbody>

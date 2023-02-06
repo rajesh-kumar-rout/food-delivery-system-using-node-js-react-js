@@ -1,3 +1,4 @@
+import moment from "moment"
 import { useEffect, useState } from "react"
 import { MdDelete } from "react-icons/md"
 import { toast } from "react-toastify"
@@ -67,7 +68,7 @@ export default function SlidersPage() {
                                 <td>
                                     <img className="table-img" src={slider.imageUrl} />
                                 </td>
-                                <td>{slider.createdAt}</td>
+                                <td>{moment(slider.createdAt).format("D MMM GG h:m A")}</td>
                                 <td>
                                     <button className="btn btn-icon btn-danger" onClick={e => handleDeleteSlider(slider.id)}>
                                         <MdDelete size={24} />

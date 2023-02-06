@@ -4,6 +4,8 @@ import { Link } from "react-router-dom"
 import { toast } from "react-toastify"
 import swal from "sweetalert"
 import axios from "../utils/axios"
+import { currency } from "../utils/functions"
+import moment from "moment"
 
 export default function FoodsPage() {
     const [foods, setFoods] = useState([])
@@ -69,11 +71,11 @@ export default function FoodsPage() {
                             <tr>
                                 <td>{food.id}</td>
                                 <td>{food.name}</td>
-                                <td>{food.price}</td>
+                                <td>{currency.format(food.price)}</td>
                                 <td>
                                     <img className="table-img" src={food.imageUrl} />
                                 </td>
-                                <td>{food.updatedAt}</td>
+                                <td>{moment(food.updatedAt).format("D MMM GG h:m A")}</td>
                                 <td>
                                     {food.isVegan ? (
                                         <MdCheckCircle size={24} style={{ fill: "green" }} />

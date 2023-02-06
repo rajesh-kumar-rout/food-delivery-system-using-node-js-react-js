@@ -1,3 +1,4 @@
+import moment from "moment"
 import { useEffect, useState } from "react"
 import { MdDelete, MdEdit } from "react-icons/md"
 import { Link } from "react-router-dom"
@@ -55,7 +56,6 @@ export default function CategoriesPage() {
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Total Foods</th>
                             <th>Image</th>
                             <th>Last Updated</th>
                             <th>Action</th>
@@ -66,11 +66,10 @@ export default function CategoriesPage() {
                             <tr key={category.id}>
                                 <td>{category.id}</td>
                                 <td>{category.name}</td>
-                                <td>{category.totalFoods}</td>
                                 <td>
                                     <img className="table-img" src={category.imageUrl} />
                                 </td>
-                                <td>{category.updatedAt}</td>
+                                <td>{moment(category.updatedAt).format("D MMM GG h:m A")}</td>
                                 <td>
                                     <Link
                                         to="/categories/edit"

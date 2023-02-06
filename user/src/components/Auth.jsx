@@ -19,7 +19,11 @@ export default function Auth({ children }) {
     }, [])
 
     if (isLoading) {
-        return <Loader/>
+        return (
+            <div className="h-screen">
+                <Loader/>
+            </div>
+        )
     }
 
     return (

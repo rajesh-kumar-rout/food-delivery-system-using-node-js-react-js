@@ -13,7 +13,7 @@ export default function LoginPage() {
         try {
             const { data } = await axios.post("/auth/login", values)
 
-            localStorage.setItem("token", data.token)
+            localStorage.setItem("authToken", data.authToken)
 
             window.location.href = queries.get("returnUrl") ?? "/"
 

@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { Navigate, Outlet, useLocation, useSearchParams } from "react-router-dom"
+import { Outlet, useLocation, useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
 import { SITE_URL } from "../utils/constants"
 import { AuthContext } from "./Auth"

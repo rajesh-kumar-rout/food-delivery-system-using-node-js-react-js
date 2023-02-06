@@ -16,7 +16,7 @@ export default function SearchPage() {
     const [categories, setCategories] = useState([])
 
     const [foods, setFoods] = useState([])
-    
+
     const [filteredFoods, setFilteredFoods] = useState([])
 
     const fetchData = async () => {
@@ -26,15 +26,19 @@ export default function SearchPage() {
         ])
 
         setCategories(categoriesRes.data)
-
+        console.log(foodsRes.data)
+        console.log(categoriesRes.data)
         setFoods(foodsRes.data)
 
         setIsFetching(false)
     }
 
     const filterFoods = async () => {
-        const filteredFoods = foods.filter(food => food.name.toLowerCase().includes(query.toLowerCase()) ||
-            food.category.toLowerCase().includes(query.toLowerCase()))
+        const filteredFoods = foods.filter(
+            food => food.name.toLowerCase().includes(query.toLowerCase()) ||
+                food.category.name.toLowerCase().includes(query.toLowerCase())
+        )
+
         setFilteredFoods(filteredFoods)
     }
 
@@ -57,14 +61,14 @@ export default function SearchPage() {
                 <input
                     type="search"
                     value={query}
-                    className="form-control border-none" 
+                    className="form-control border-none"
                     onChange={event => setQueries(`query=${event.target.value}`)}
                     placeholder="Search food here..."
                 />
             </form>
 
             <div className="search-result">
-                {query?.length ? "Search Results" : "Top Categories"}
+                {query?.length ? (filteredFoods.length === 0 ? "No Food Found" : "Search Results") : "Top Categories"}
             </div>
 
             {query.length > 0 ? (
@@ -79,7 +83,7 @@ export default function SearchPage() {
             ) : (
                 <div className="search-categories">
                     {categories.map(category => (
-                        <div className="category" onClick={() => setQueries(`query=${category.name}`)}>
+                        <div key={category.id} className="category" onClick={() => setQueries(`query=${category.name}`)}>
                             <img src={category.imageUrl} />
                             <p className="category-name">{category.name}</p>
                         </div>

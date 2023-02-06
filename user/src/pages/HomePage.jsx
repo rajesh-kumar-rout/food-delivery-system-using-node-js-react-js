@@ -35,7 +35,7 @@ export default function HomePage() {
         <div className="home">
             <Carousel autoPlay={true} interval={2000} infiniteLoop stopOnHover={true}>
                 {sliders.map(slider => (
-                    <img src={slider.imageUrl}/>
+                    <img key={slider.id} src={slider.imageUrl}/>
                 ))}
             </Carousel>
 

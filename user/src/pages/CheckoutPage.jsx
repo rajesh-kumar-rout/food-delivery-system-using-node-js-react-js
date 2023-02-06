@@ -16,7 +16,9 @@ export default function CheckoutPage() {
         name: "",
         street: "",
         landmark: "",
-        mobile: ""
+        mobile: "",
+        building: "",
+        instruction: ""
     })
 
     const fetchData = async () => {
@@ -58,7 +60,7 @@ export default function CheckoutPage() {
             validationSchema={checkoutSchema}
             onSubmit={handleSubmit}
         >
-            {({ isSubmitting }) => (
+            {({ isSubmitting, values }) => (
                 <Form className="checkout">
                     <div className="card">
                         <h2 className="card-header card-title">Delivery Address</h2>

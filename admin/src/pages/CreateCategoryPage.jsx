@@ -3,8 +3,6 @@ import { toast } from "react-toastify"
 import axios from "../utils/axios"
 import { categorySchema } from "../utils/validationSchemas"
 
-
-
 export default function CreateCategoryPage() {
 
     const handleSubmit = async (values, { resetForm, setSubmitting }) => {
@@ -18,8 +16,8 @@ export default function CreateCategoryPage() {
             toast.success("Category created successfully")
 
         } catch ({ response }) {
-            
-            toast.error("Category already exists")
+
+            response?.status === 409 && toast.error("Category already exists")
         }
 
         setSubmitting(false)

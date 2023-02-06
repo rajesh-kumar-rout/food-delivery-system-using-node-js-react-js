@@ -11,7 +11,7 @@ export default function Auth({ children }) {
 
     const fetchCurrentUser = async () => {
         const { data } = await axios.get(BASE_URL + "/auth")
-        setCurrentUser(data.isAdmin && data)
+        setCurrentUser(data?.isAdmin && data)
         setIsLoading(false)
     }
 

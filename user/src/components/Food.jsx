@@ -1,11 +1,12 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 import axios from "utils/axios"
+import { currency } from "utils/functions"
 import Button from "./Button"
 import QuantityControl from "./QtyControl"
 
 export default function Food({ food }) {
-    const [qty, setQty] = useState(1)
+    const [quantity, setQuantity] = useState(1)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleAddToCart = async () => {
@@ -13,7 +14,7 @@ export default function Food({ food }) {
 
         await axios.post("/cart", {
             foodId: food.id,
-            qty
+            quantity
         })
 
         toast.success("Added to cart")
@@ -23,16 +24,16 @@ export default function Food({ food }) {
 
     return (
         <div className="food">
-            <div className="food-type food-type-veg"></div>
+            <div className="food-type" data-vegan={food.isVegan}></div>
             
             <img src={food.imageUrl} />
 
             <p className="food-name">{food.name}</p>
 
-            <p className="food-price">Rs. {food.price}</p>
+            <p className="food-price">{currency.format(food.price)}</p>
 
             <div className="food-footer">
-                <QuantityControl quantity={qty} onChange={quantity => setQty(quantity)}/>
+                <QuantityControl quantity={quantity} onChange={quantity => setQuantity(quantity)}/>
                 
                 <Button
                     authenticated

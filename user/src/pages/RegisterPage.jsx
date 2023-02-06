@@ -11,7 +11,7 @@ export default function RegisterPage() {
         try {
             const { data } = await axios.post("/auth/register", values)
 
-            localStorage.setItem("token", data.token)
+            localStorage.setItem("authToken", data.authToken)
 
             window.location.href = "/"
 

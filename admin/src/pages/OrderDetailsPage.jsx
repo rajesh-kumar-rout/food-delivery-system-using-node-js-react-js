@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import Loader from "../components/Loader"
 import { toast } from "react-toastify"
+import { currency } from "../utils/functions"
 
 export default function OrderDetailsPage() {
     const { orderId } = useParams()
@@ -22,8 +23,8 @@ export default function OrderDetailsPage() {
     const { foods, deliveryAddress, paymentDetails } = order
 
     useEffect(() => {
-        setDeliveryAgentId(order?.order?.deliveryAgentId)
-        setStatus(order.order?.status)
+        setDeliveryAgentId(order.deliveryAgentId)
+        setStatus(order.status)
     }, [order])
 
     const fetchDetails = async () => {
@@ -33,7 +34,8 @@ export default function OrderDetailsPage() {
         ])
 
         setOrder(ordersRes.data)
-
+console.log(ordersRes.data)
+console.log(deliveryAgentsRes.data)
         setDeliveryAgents(deliveryAgentsRes.data)
 
         setIsLoading(false)
@@ -68,7 +70,7 @@ export default function OrderDetailsPage() {
                 <h4 className="card-header card-title">Foods</h4>
                 <div className="card-body order-details-body">
                     {foods.map(food => (
-                        <p>{food.name} &times; {food.qty}</p>
+                        <p>{food.name} &times; {food.quantity}</p>
                     ))}
                 </div>
             </div>
@@ -87,10 +89,10 @@ export default function OrderDetailsPage() {
             <div className="card order-details-card">
                 <h4 className="card-header card-title">Payment Details</h4>
                 <div className="card-body order-details-body">
-                    <p>Food Price : {paymentDetails.foodPrice}</p>
+                    <p>Food Price : {currency.format(paymentDetails.foodPrice)}</p>
                     <p>Gst : {paymentDetails.gstPercentage}%</p>
-                    <p>Delivery Fee : {paymentDetails.deliveryFee}</p>
-                    <p>Total Amount : {paymentDetails.totalAmount}</p>
+                    <p>Delivery Fee : {currency.format(paymentDetails.deliveryFee)}</p>
+                    <p>Total Amount : {currency.format(paymentDetails.totalAmount)}</p>
                 </div>
             </div>
 
@@ -99,17 +101,18 @@ export default function OrderDetailsPage() {
 
                 <form className="card-body" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="deliveryBoyId" className="form-label">Delivery Boy</label>
+                        <label htmlFor="deliveryAgentId" className="form-label">Delivery Agent</label>
                         <select
-                            id="deliveryBoyId"
-                            name="deliveryBoyId"
+                            id="deliveryAgentId"
+                            name="deliveryAgentId"
                             className="form-control"
                             value={deliveryAgentId}
                             onChange={event => setDeliveryAgentId(event.target.value)}
                             required
                         >
-                            {deliveryAgents.map(deliveryBoy => (
-                                <option value={deliveryBoy.id}>{deliveryBoy.name}</option>
+                            <option></option>
+                            {deliveryAgents.map(deliveryAgent => (
+                                <option value={deliveryAgent.id}>{deliveryAgent.name}</option>
                             ))}
                         </select>
                     </div>
@@ -124,9 +127,6 @@ export default function OrderDetailsPage() {
                             onChange={event => setStatus(event.target.value)}
                             required
                         >
-                            <option></option>
-                            <option value="Placed">Placed</option>
-                            <option value="Preparing">Preparing</option>
                             <option value="Preparing">Preparing</option>
                             <option value="Canceled">Canceled</option>
                             <option value="Delivered">Delivered</option>

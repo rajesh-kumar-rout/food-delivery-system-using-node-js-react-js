@@ -3,6 +3,7 @@ import QtyControl from "components/QtyControl"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import axios from "utils/axios"
+import { currency } from "utils/functions"
 
 const cart = [
     {
@@ -35,7 +36,8 @@ export default function CartPage() {
             axios.get("/cart"),
             axios.get("/cart/pricing")
         ])
-
+console.log(cartRes.data)
+console.log(pricingRes.data)
         setPricing(pricingRes.data)
 
         setCart(cartRes.data)
@@ -43,12 +45,12 @@ export default function CartPage() {
         setIsLoading(false)
     }
 
-    const handleQtyChange = async (foodId, qty) => {
+    const handleQtyChange = async (foodId, quantity) => {
         setIsLoading(true)
 
         await axios.post("/cart", {
             foodId,
-            qty
+            quantity
         })
 
         fetchData()
@@ -71,7 +73,7 @@ export default function CartPage() {
     }
 
     if(cart.length === 0) {
-        return <div>Your cart is empty</div>
+        return <div className="cart-empty-msg">Your cart is empty</div>
     }
 
     return (
@@ -81,12 +83,12 @@ export default function CartPage() {
                 <div className="card-body" >
                     {cart.map(cartItem => (
                         <div className="cart-item">
-                            <img className="cart-item-img" src={cartItem.imageUrl} />
+                            <img className="cart-item-img" src={cartItem.food.imageUrl} />
                             <div className="cart-item-right">
-                                <p className="cart-item-name">{cartItem.name}</p>
-                                <p className="cart-item-price">Rs. {cartItem.price}</p>
+                                <p className="cart-item-name">{cartItem.food.name}</p>
+                                <p className="cart-item-price">{currency.format(cartItem.food.price)}</p>
                                 <div className="cart-item-footer">
-                                    <QtyControl quantity={cartItem.qty} onChange={qty => handleQtyChange(cartItem.foodId, qty)} />
+                                    <QtyControl quantity={cartItem.quantity} onChange={qty => handleQtyChange(cartItem.foodId, qty)} />
                                     <button className="btn btn-primary btn-sm" onClick={() => handleDeleteItem(cartItem.foodId)}>Remove</button>
                                 </div>
                             </div>
@@ -101,19 +103,19 @@ export default function CartPage() {
                 <div className="card-body">
                     <div className="pricing">
                         <p>Food Price</p>
-                        <p>Rs. {pricing.foodPrice}</p>
+                        <p>{currency.format(pricing.foodPrice)}</p>
                     </div>
                     <div className="pricing">
                         <p>Delivery Fee</p>
-                        <p>Rs. {pricing.deliveryFee}</p>
+                        <p>{currency.format(pricing.deliveryFee)}</p>
                     </div>
                     <div className="pricing">
                         <p>Gst(7%)</p>
-                        <p>Rs. {pricing.gstPercentage}</p>
+                        <p>{currency.format(pricing.gstPercentage)}</p>
                     </div>
                     <div className="pricing pricing-last-item">
                         <p>Total Amount</p>
-                        <p>Rs. {pricing.totalAmount}</p>
+                        <p>{currency.format(pricing.totalAmount)}</p>
                     </div>
                 </div>
 

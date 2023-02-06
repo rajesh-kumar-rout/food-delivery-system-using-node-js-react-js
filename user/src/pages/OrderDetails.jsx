@@ -2,6 +2,7 @@ import Loader from "components/Loader"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import axios from "utils/axios"
+import { currency } from "utils/functions"
 
 export default function OrderDetailsPage() {
     const { orderId } = useParams()
@@ -36,7 +37,7 @@ export default function OrderDetailsPage() {
                     <div className="table-container">
                         <table style={{ textAlign: "left", minWidth: 400 }}>
                             <thead>
-                                <tr >
+                                <tr>
                                     <th>Food</th>
                                     <th>Quantity</th>
                                 </tr>
@@ -47,10 +48,9 @@ export default function OrderDetailsPage() {
                                         <td>
                                             <p style={{ textAlign: "left" }}>{food.name}</p>
                                         </td>
-                                        <td>{food.qty}</td>
+                                        <td>{food.quantity}</td>
                                     </tr>
                                 ))}
-
                             </tbody>
                         </table>
                     </div>
@@ -67,7 +67,7 @@ export default function OrderDetailsPage() {
                         <p>{deliveryAddress.name}, {deliveryAddress.mobile}</p>
                         <p className="mt-2">{deliveryAddress.street}</p>
                         <p className="mt-2">{deliveryAddress.landmark}</p>
-                        <p className="mt-2">instruction: {deliveryAddress.instruction}</p>
+                        {deliveryAddress.instruction && <p className="mt-2">instruction: {deliveryAddress.instruction}</p>}
                     </div>
                 </div>
 
@@ -77,10 +77,10 @@ export default function OrderDetailsPage() {
                     </div>
 
                     <div className="card-body">
-                        <p>Food Price: Rs {paymentDetails.foodPrice}</p>
-                        <p className="mt-2">Delivery Fee: Rs {paymentDetails.deliveryFee}</p>
-                        <p className="mt-2">Gst ({paymentDetails.gstPercentage}%): Rs {paymentDetails.gstAmount}</p>
-                        <p className="mt-2">Total Amount: Rs {paymentDetails.totalAmount}</p>
+                        <p>Food Price: {currency.format(paymentDetails.foodPrice)}</p>
+                        <p className="mt-2">Delivery Fee: {currency.format(paymentDetails.deliveryFee)}</p>
+                        <p className="mt-2">Gst ({paymentDetails.gstPercentage}%): {currency.format(paymentDetails.gstAmount)}</p>
+                        <p className="mt-2">Total Amount: {currency.format(paymentDetails.totalAmount)}</p>
                     </div>
                 </div>
             </div>
