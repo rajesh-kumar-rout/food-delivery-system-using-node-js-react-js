@@ -20,6 +20,7 @@ export async function authenticate(req, res, next) {
 
     } catch {
         
+        req._id = null
     }
 
     next()

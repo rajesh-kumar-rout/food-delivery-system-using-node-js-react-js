@@ -10,8 +10,12 @@ router.get("/", async (req, res) => {
     const orders = await Order.findAll({
         include: {
             model: PaymentDetails,
-            as: "paymentDetails"
-        }
+            as: "paymentDetails",
+            attributes: ["totalAmount"]
+        },
+        order: [
+            ["id", "desc"]
+        ]
     })
 
     res.json(orders)
@@ -48,7 +52,7 @@ router.patch(
 
     param("orderId").isInt().toInt(),
 
-    body("status").isIn(["Placed", "Preparing", "Prepared", "Canceled", "Delivered"]),
+    body("status").isIn(["Preparing", "Canceled", "Delivered"]),
 
     body("deliveryAgentId")
         .optional()

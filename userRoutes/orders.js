@@ -61,8 +61,9 @@ router.post(
             foodPrice += cartItem.food.price * cartItem.quantity
         })
 
-        const gstAmount = Math.round(foodPrice * (setting.gstAmount / 100))
-
+        const gstAmount = Math.round(foodPrice * (setting.gstPercentage / 100))
+// console.log(setting.gstAmount);
+// return res.status(201).json("")
         const totalAmount = gstAmount + setting.deliveryFee + foodPrice
 
         const order = await Order.create(
@@ -85,12 +86,12 @@ router.post(
             },
             {
                 include: [
-                    {association: Order.DeliveryAddress, as: "deliveryAddress"},
-                    {association: Order.PaymentDetails, as: "paymentDetails"},
+                    { association: Order.DeliveryAddress, as: "deliveryAddress" },
+                    { association: Order.PaymentDetails, as: "paymentDetails" },
                     {
                         association: Order.Foods,
                         as: 'food'
-                      }
+                    }
                 ]
             }
         )
@@ -106,16 +107,11 @@ router.get("/", async (req, res) => {
         where: {
             userId: _id
         },
-        include: [
-            {
-                model: OrderedFood,
-                as: "foods"
-            },
-            {
-                model: PaymentDetails,
-                as: "paymentDetails"
-            }
-        ],
+        include: {
+            model: PaymentDetails,
+            as: "paymentDetails",
+            attributes: ["totalAmount"]
+        },
         order: [
             ["id", "desc"]
         ]

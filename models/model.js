@@ -17,7 +17,8 @@ Category.hasMany(Food, {
 })
 
 Food.belongsTo(Category, {
-    foreignKey: "categoryId"
+    foreignKey: "categoryId",
+    as: "category"
 })
 
 User.hasMany(Cart, {

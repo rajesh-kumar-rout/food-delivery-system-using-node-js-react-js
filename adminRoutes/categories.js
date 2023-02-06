@@ -28,7 +28,7 @@ router.post(
     async (req, res) => {
         const { name, imageUrl } = req.body
 
-        if (await Category.findOne({ name })) {
+        if (await Category.findOne({ where: {name} })) {
             return res.status(409).json({ error: "Category already exists" })
         }
 

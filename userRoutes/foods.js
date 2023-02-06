@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { Food } from "../models/model.js"
+import { Category, Food } from "../models/model.js"
 
 const router = Router()
 
@@ -20,7 +20,12 @@ router.get("/", async (req, res) => {
     const foods = await Food.findAll({
         order: [
             ["id", "desc"]
-        ]
+        ],
+        include: {
+            model: Category,
+            as: "category",
+            attributes: ["name"]
+        }
     })
 
     res.json(foods)

@@ -10,6 +10,7 @@ router.get("/", async (req, res) => {
     const foods = await Food.findAll({
         include: {
             model: Category,
+            as: "category",
             attributes: ["name"]
         }
     })
