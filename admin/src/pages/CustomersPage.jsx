@@ -1,6 +1,6 @@
 import moment from "moment"
-import { useEffect } from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import Loader from "../components/Loader"
 import axios from "../utils/axios"
 
 export default function CustomersPage() {
@@ -17,14 +17,14 @@ export default function CustomersPage() {
     }, [])
 
     if (isLoading) {
-        return <div>Loading...</div>
+        return <Loader/>
     }
 
     return (
         <div className="card">
-            <div className="card-header card-header-title">Customers</div>
+            <p className="card-header card-title">Customers</p>
             <div className="table">
-                <table className="min-w-700">
+                <table style={{ minWidth: 700 }}>
                     <thead>
                         <tr>
                             <th>ID</th>

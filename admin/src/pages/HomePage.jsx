@@ -8,7 +8,7 @@ export default function HomePage() {
 
     const fetchData = async () => {
         const { data } = await axios.get("/analytics")
-console.log(data);
+
         setData(data)
 
         setIsLoading(false)

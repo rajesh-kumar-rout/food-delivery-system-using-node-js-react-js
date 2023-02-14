@@ -1,12 +1,11 @@
 import axios from "axios"
-import { ADMIN_URL } from "./constants"
 
-axios.defaults.baseURL = ADMIN_URL
+axios.defaults.baseURL = process.env.REACT_APP_ADMIN_URL
 
 axios.interceptors.request.use(config => {
 
     if (localStorage.getItem("authToken")) {
-        config.headers.authorization = localStorage.getItem("authToken")
+        config.headers.authorization = `Bearer ${localStorage.getItem("authToken")}`
     }
 
     return config

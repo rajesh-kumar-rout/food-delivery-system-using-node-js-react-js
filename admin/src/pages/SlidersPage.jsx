@@ -32,9 +32,9 @@ export default function SlidersPage() {
         setIsLoading(true)
 
         await axios.delete(`/sliders/${sliderId}`)
-        
+
         setSliders(sliders.filter(slider => slider.id !== sliderId))
-        
+
         toast.success("Slider deleted successfully")
 
         setIsLoading(false)
@@ -45,12 +45,12 @@ export default function SlidersPage() {
     }, [])
 
     if (isLoading) {
-        return <Loader/>
+        return <Loader />
     }
 
     return (
         <div className="card">
-            <div className="card-header card-header-title">Sliders</div>
+            <p className="card-header card-title">Sliders</p>
             <div className="table">
                 <table>
                     <thead>
@@ -66,11 +66,11 @@ export default function SlidersPage() {
                             <tr>
                                 <td>{slider.id}</td>
                                 <td>
-                                    <img className="table-img" src={slider.imageUrl} />
+                                    <img style={{ height: 60, width: 60 }} src={slider.imageUrl} />
                                 </td>
                                 <td>{moment(slider.createdAt).format("D MMM GG h:m A")}</td>
                                 <td>
-                                    <button className="btn btn-icon btn-danger" onClick={e => handleDeleteSlider(slider.id)}>
+                                    <button className="btn btn-sm btn-danger" onClick={e => handleDeleteSlider(slider.id)}>
                                         <MdDelete size={24} />
                                     </button>
                                 </td>

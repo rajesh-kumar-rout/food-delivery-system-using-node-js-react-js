@@ -28,9 +28,9 @@ export default function SettingsPage() {
 
     return (
         <div className="card">
-            <div className="card-header card-header-title">Settings</div>
+            <p className="card-header card-title">Settings</p>
             <div className="table">
-                <table className="min-w-700">
+                <table style={{minWidth: 700}}>
                     <thead>
                         <tr>
                             <th>Delivery Fee</th>
@@ -47,7 +47,7 @@ export default function SettingsPage() {
                             <td>
                                 <Link
                                     to="/settings/edit"
-                                    className="btn btn-icon btn-primary"
+                                    className="btn btn-sm btn-primary"
                                 >
                                     <MdEdit size={24} />
                                 </Link>

@@ -1,13 +1,11 @@
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useEffect, useState } from "react"
-import { useLocation } from "react-router-dom"
 import { toast } from "react-toastify"
 import Loader from "../components/Loader"
 import axios from "../utils/axios"
 import { editSettingSchema } from "../utils/validationSchemas"
 
 export default function EditSettingPage() {
-    const { state } = useLocation()
     const [settings, setSettings] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -44,8 +42,8 @@ export default function EditSettingPage() {
             validationSchema={editSettingSchema}
         >
             {({ isSubmitting }) => (
-                <Form className="card form">
-                    <h2 className="card-header card-header-title">Change Setting</h2>
+                <Form className="card">
+                    <p className="card-header card-title">Change Setting</p>
 
                     <div className="card-body">
                         <div className="form-group">

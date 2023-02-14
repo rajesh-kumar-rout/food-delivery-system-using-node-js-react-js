@@ -2,6 +2,7 @@ import moment from "moment"
 import { useEffect, useState } from "react"
 import { MdDelete } from "react-icons/md"
 import swal from "sweetalert"
+import Loader from "../components/Loader"
 import axios from "../utils/axios"
 
 export default function DeliveryAgentsPage() {
@@ -39,14 +40,14 @@ export default function DeliveryAgentsPage() {
     }, [])
 
     if (isLoading) {
-        return <div>Loading...</div>
+        return <Loader/>
     }
     
     return (
         <div className="card">
-            <div className="card-header card-header-title">Delivery Boys</div>
+            <p className="card-header card-title">Delivery Boys</p>
             <div className="table">
-                <table className="min-w-700">
+                <table style={{minWidth: 700}}>
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -64,7 +65,7 @@ export default function DeliveryAgentsPage() {
                                 <td>{deliveryAgent.email}</td>
                                 <td>{moment(deliveryAgent.createdAt).format("D MMM GG h:m A")}</td>
                                 <td>
-                                    <button onClick={() => handleDeleteDeliveryAgent(deliveryAgent.id)} className="btn btn-icon btn-danger ml-1">
+                                    <button onClick={() => handleDeleteDeliveryAgent(deliveryAgent.id)} className="btn btn-sm btn-danger ml-1">
                                         <MdDelete size={24} />
                                     </button>
                                 </td>

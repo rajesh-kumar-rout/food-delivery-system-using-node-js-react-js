@@ -1,9 +1,12 @@
 import { ErrorMessage, Field, Form, Formik } from "formik"
+import { useRef } from "react"
 import { toast } from "react-toastify"
 import axios from "../utils/axios"
+import { handleImage } from "../utils/functions"
 import { categorySchema } from "../utils/validationSchemas"
 
 export default function CreateCategoryPage() {
+    const imgRef = useRef()
 
     const handleSubmit = async (values, { resetForm, setSubmitting }) => {
         setSubmitting(true)
@@ -12,7 +15,9 @@ export default function CreateCategoryPage() {
             await axios.post("/categories", values)
 
             resetForm()
-            
+
+            imgRef.current.value = ""
+
             toast.success("Category created successfully")
 
         } catch ({ response }) {
@@ -27,14 +32,14 @@ export default function CreateCategoryPage() {
         <Formik
             initialValues={{
                 name: "",
-                imageUrl: ""
+                image: ""
             }}
             validationSchema={categorySchema}
             onSubmit={handleSubmit}
         >
-            {({ isSubmitting }) => (
-                <Form className="card form">
-                    <h2 className="card-header card-header-title">Create Category</h2>
+            {({ isSubmitting, setFieldValue }) => (
+                <Form className="card">
+                    <p className="card-header card-title">Create Category</p>
 
                     <div className="card-body">
                         <div className="form-group">
@@ -49,14 +54,17 @@ export default function CreateCategoryPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="img" className="form-label">Image Url</label>
-                            <Field
-                                type="text"
-                                id="imageUrl"
+                            <label htmlFor="image" className="form-label">Image</label>
+                            <input
+                                type="file"
+                                id="image"
                                 className="form-control"
-                                name="imageUrl"
+                                name="image"
+                                required
+                                accept=".png, .jpeg, .jpg"
+                                ref={imgRef}
+                                onChange={event => handleImage(event, setFieldValue)}
                             />
-                            <ErrorMessage component="p" name="imageUrl" className="form-error" />
                         </div>
 
                         <button

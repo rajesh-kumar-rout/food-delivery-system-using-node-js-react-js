@@ -1,26 +1,23 @@
 import { ErrorMessage, Field, Form, Formik } from 'formik'
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useEffect, useRef, useState } from "react"
+import { useLocation } from "react-router-dom"
 import { toast } from "react-toastify"
+import Loader from '../components/Loader'
 import axios from "../utils/axios"
+import { handleImage } from '../utils/functions'
 import { foodSchema } from '../utils/validationSchemas'
 
-
 export default function EditFoodPage() {
-    const { foodId } = useParams()
+    const { state } = useLocation()
+    const imgRef = useRef()
+
     const [categories, setCategories] = useState([])
-    const [food, setFood] = useState({})
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchData = async () => {
-        const [categoriesRes, foodRes] = await Promise.all([
-            axios.get("/categories"),
-            axios.get(`/foods/${foodId}`)
-        ])
+        const { data } = await axios.get("/categories")
 
-        setCategories(categoriesRes.data)
-
-        setFood(foodRes.data)
+        setCategories(data)
 
         setIsLoading(false)
     }
@@ -29,12 +26,14 @@ export default function EditFoodPage() {
         setSubmitting(true)
 
         try {
-            await axios.patch(`/foods/${foodId}`, values)
+            await axios.patch(`/foods/${state.id}`, values)
 
             toast.success("Food edited successfully")
 
+            imgRef.current.value = ""
+
         } catch ({ response }) {
-            
+
             response?.status === 409 && toast.error("Food already exists")
         }
 
@@ -46,12 +45,12 @@ export default function EditFoodPage() {
     }, [])
 
     if (isLoading) {
-        return <p>Loading...</p>
+        return <Loader/>
     }
 
     return (
         <Formik
-            initialValues={food}
+            initialValues={state}
             validationSchema={foodSchema}
             onSubmit={handleSubmit}
         >
@@ -60,8 +59,8 @@ export default function EditFoodPage() {
                 setFieldValue
             }) => (
 
-                <Form className="card form">
-                    <div className="card-header card-header-title">Edit food</div>
+                <Form className="card">
+                    <p className="card-header card-title">Edit food</p>
 
                     <div className="card-body">
                         <div className="form-group">
@@ -73,6 +72,17 @@ export default function EditFoodPage() {
                                 name="name"
                             />
                             <ErrorMessage component="p" name="name" className="form-error" />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="price" className="form-label">Price</label>
+                            <Field
+                                type="number"
+                                id="price"
+                                className="form-control"
+                                name="price"
+                            />
+                            <ErrorMessage component="p" name="price" className="form-error" />
                         </div>
 
                         <div className="form-group">
@@ -92,16 +102,19 @@ export default function EditFoodPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="imageUrl" className="form-label">Image Url</label>
-                            <Field
-                                type="text"
-                                id="imageUrl"
+                            <label htmlFor="imageUrl" className="form-label">Image</label>
+                            <input
+                                type="file"
+                                id="image"
                                 className="form-control"
-                                name="imageUrl"
+                                name="image"
+                                accept=".png, .jpeg, .jpg"
+                                ref={imgRef}
+                                onChange={event => handleImage(event, setFieldValue)}
                             />
                         </div>
 
-                        <div className="form-check">
+                        <div className="form-group form-check">
                             <Field
                                 type="checkbox"
                                 id="isVegan"
@@ -112,7 +125,7 @@ export default function EditFoodPage() {
                             <label htmlFor="isVegan">Vegan</label>
                         </div>
 
-                        <div className="form-check">
+                        <div className="form-group form-check">
                             <Field
                                 type="checkbox"
                                 id="isFeatured"

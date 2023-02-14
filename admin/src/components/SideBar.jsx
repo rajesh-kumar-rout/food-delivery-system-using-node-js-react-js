@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { MdHome, MdRestaurantMenu, MdReorder, MdPerson, MdPhotoLibrary, MdPeople, MdArrowDropDown, MdLogout, MdSettings } from "react-icons/md"
+import { MdArrowDropDown, MdHome, MdPeople, MdPerson, MdPhotoLibrary, MdReorder, MdRestaurantMenu, MdSettings } from "react-icons/md"
 import Navigation from "./Navigation"
 
 export default function SideBar({ show, onNavigate }) {
@@ -106,11 +106,11 @@ export default function SideBar({ show, onNavigate }) {
                         to={menu.link}
                         onClick={(e) => menu.subMenus ? handleMenuClick(e, index) : onNavigate()}
                         className="sidebar-nav-link"
-                        activeClass="active"
+                        activeClass="sidebar-nav-link-active"
                         key={index}
                     >
                         {menu.icon}
-                        <div className="sidebar-name-icon">
+                        <div className="sidebar-right-container">
                             <p>{menu.name}</p>
                             {menu.subMenus && <MdArrowDropDown size={24} />}
                         </div>

@@ -1,10 +1,10 @@
 import { ErrorMessage, Field, Form, Formik } from 'formik'
 import { useEffect, useRef, useState } from "react"
 import { toast } from "react-toastify"
+import Loader from '../components/Loader'
 import axios from "../utils/axios"
+import { handleImage } from '../utils/functions'
 import { foodSchema } from '../utils/validationSchemas'
-
-
 
 export default function CreateFoodPage() {
     const [categories, setCategories] = useState([])
@@ -29,8 +29,10 @@ export default function CreateFoodPage() {
 
             resetForm()
 
+            imgRef.current.value = ""
+
         } catch ({ response }) {
-            
+            console.log(response);
             response.status === 409 && toast.error("Food already exists")
         }
 
@@ -42,7 +44,7 @@ export default function CreateFoodPage() {
     }, [])
 
     if (isLoading) {
-        return <p>Loading...</p>
+        return <Loader/>
     }
 
     return (
@@ -51,7 +53,7 @@ export default function CreateFoodPage() {
                 name: "",
                 price: "",
                 categoryId: "",
-                imageUrl: "",
+                image: "",
                 isVegan: true,
                 isFeatured: true
             }}
@@ -59,12 +61,12 @@ export default function CreateFoodPage() {
             onSubmit={handleSubmit}
         >
             {({
-                values,
+                setFieldValue,
                 isSubmitting
             }) => (
 
-                <Form className="card form">
-                    <div className="card-header card-header-title">Create food</div>
+                <Form className="card">
+                    <p className="card-header card-title">Create food</p>
 
                     <div className="card-body">
                         <div className="form-group">
@@ -106,16 +108,20 @@ export default function CreateFoodPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="imageUrl" className="form-label">Image Url</label>
-                            <Field
-                                type="text"
-                                id="imageUrl"
+                            <label htmlFor="image" className="form-label">Image</label>
+                            <input
+                                type="file"
+                                id="image"
                                 className="form-control"
-                                name="imageUrl"
+                                name="image"
+                                required
+                                onChange={event => handleImage(event, setFieldValue)}
+                                accept=".png, .jpeg, .jpg"
+                                ref={imgRef}
                             />
                         </div>
                         
-                        <div className="form-check">
+                        <div className="form-group form-check">
                             <Field
                                 type="checkbox"
                                 id="isVegan"
@@ -125,7 +131,7 @@ export default function CreateFoodPage() {
                             <label htmlFor="isVegan">Vegan</label>
                         </div>
 
-                        <div className="form-check">
+                        <div className="form-group form-check">
                             <Field
                                 type="checkbox"
                                 id="isFeatured"

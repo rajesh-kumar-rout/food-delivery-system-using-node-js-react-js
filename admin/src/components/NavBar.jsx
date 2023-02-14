@@ -7,7 +7,7 @@ export default function NavBar({ onMenuClick }) {
                 <MdMenu size={28} />
             </button>
             
-            <h1 className="navbar-title">FOODIE ADMIN</h1>
+            <p className="navbar-title">FOODIE ADMIN</p>
         </div>
     )
 }

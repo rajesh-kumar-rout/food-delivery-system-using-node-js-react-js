@@ -1,6 +1,5 @@
+import axios from "axios"
 import { createContext, useEffect, useState } from "react"
-import axios from "../utils/axios"
-import { BASE_URL } from "../utils/constants"
 import Loader from "./Loader"
 
 export const AuthContext = createContext()
@@ -10,8 +9,10 @@ export default function Auth({ children }) {
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchCurrentUser = async () => {
-        const { data } = await axios.get(BASE_URL + "/auth")
+        const { data } = await axios.get(process.env.REACT_APP_BASE_URL + "/auth")
+
         setCurrentUser(data?.isAdmin && data)
+
         setIsLoading(false)
     }
 

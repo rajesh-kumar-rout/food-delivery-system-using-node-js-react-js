@@ -1,8 +1,8 @@
-import { Outlet } from "react-router-dom"
 import { useEffect, useState } from "react"
+import { Outlet } from "react-router-dom"
+import useMediaQuery from "../hooks/useMediaQuery"
 import NavBar from "./NavBar"
 import SideBar from "./SideBar"
-import useMediaQuery from "../hooks/useMediaQuery"
 
 export default function Layout() {
     const isTablet = useMediaQuery("(max-width: 768px)")
@@ -18,7 +18,7 @@ export default function Layout() {
 
             <SideBar show={showSideBar} onNavigate={() => isTablet && setShowSideBar(false)} />
 
-            <div className="page-layout">
+            <div className="layout">
                 <Outlet />
             </div>
         </div>

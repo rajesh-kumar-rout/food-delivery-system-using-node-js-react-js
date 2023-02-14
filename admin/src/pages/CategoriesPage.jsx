@@ -33,7 +33,7 @@ export default function CategoriesPage() {
         await axios.delete(`/categories/${categoryId}`)
 
         setCategories(categories.filter(category => category.id !== categoryId))
-        
+
         toast.success("Category deleted successfully")
 
         setIsLoading(false)
@@ -49,9 +49,9 @@ export default function CategoriesPage() {
 
     return (
         <div className="card">
-            <div className="card-header card-header-title">Categories</div>
+            <p className="card-header card-title">Categories</p>
             <div className="table">
-                <table className="min-w-700">
+                <table style={{ minWidth: 700 }}>
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -67,24 +67,26 @@ export default function CategoriesPage() {
                                 <td>{category.id}</td>
                                 <td>{category.name}</td>
                                 <td>
-                                    <img className="table-img" src={category.imageUrl} />
+                                    <img style={{ height: 60, width: 60 }} src={category.imageUrl} />
                                 </td>
                                 <td>{moment(category.updatedAt).format("D MMM GG h:m A")}</td>
                                 <td>
-                                    <Link
-                                        to="/categories/edit"
-                                        className="btn btn-icon btn-primary"
-                                        state={category}
-                                    >
-                                        <MdEdit size={24} />
-                                    </Link>
+                                    <div className="table-btn-gap">
+                                        <Link
+                                            to="/categories/edit"
+                                            className="btn btn-sm btn-primary"
+                                            state={category}
+                                        >
+                                            <MdEdit size={24} />
+                                        </Link>
 
-                                    <button
-                                        className="btn btn-icon btn-danger ml-1"
-                                        onClick={() => deleteCategory(category.id)}
-                                    >
-                                        <MdDelete size={24} />
-                                    </button>
+                                        <button
+                                            className="btn btn-sm btn-danger"
+                                            onClick={() => deleteCategory(category.id)}
+                                        >
+                                            <MdDelete size={24} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

@@ -1,11 +1,12 @@
+import moment from "moment"
 import { useEffect, useState } from "react"
 import { MdCheckCircle, MdClose, MdDelete, MdEdit } from "react-icons/md"
 import { Link } from "react-router-dom"
 import { toast } from "react-toastify"
 import swal from "sweetalert"
+import Loader from "../components/Loader"
 import axios from "../utils/axios"
 import { currency } from "../utils/functions"
-import moment from "moment"
 
 export default function FoodsPage() {
     const [foods, setFoods] = useState([])
@@ -45,15 +46,15 @@ export default function FoodsPage() {
         fetchFoods()
     }, [])
 
-    if(isLoading){
-        return <div>Loading...</div>
+    if (isLoading) {
+        return <Loader/>
     }
 
     return (
         <div className="card">
-            <div className="card-header card-header-title">Foods</div>
+            <p className="card-header card-title">Foods</p>
             <div className="table">
-                <table className="min-w-700">
+                <table style={{ minWidth: 700 }}>
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -73,7 +74,7 @@ export default function FoodsPage() {
                                 <td>{food.name}</td>
                                 <td>{currency.format(food.price)}</td>
                                 <td>
-                                    <img className="table-img" src={food.imageUrl} />
+                                    <img style={{ height: 60, width: 60 }} src={food.imageUrl} />
                                 </td>
                                 <td>{moment(food.updatedAt).format("D MMM GG h:m A")}</td>
                                 <td>
@@ -85,22 +86,25 @@ export default function FoodsPage() {
                                 </td>
                                 <td>
                                     {food.isFeatured ? (
-                                        <MdCheckCircle size={24} style={{fill: "green"}} />
+                                        <MdCheckCircle size={24} style={{ fill: "green" }} />
                                     ) : (
-                                        <MdClose size={24} style={{fill: "red"}} />
+                                        <MdClose size={24} style={{ fill: "red" }} />
                                     )}
                                 </td>
                                 <td>
-                                    <Link
-                                        to={`/foods/${food.id}`}
-                                        className="btn btn-icon btn-primary"
-                                    >
-                                        <MdEdit size={24} />
-                                    </Link>
+                                    <div className="table-btn-gap">
+                                        <Link
+                                            to="/foods/edit"
+                                            state={food}
+                                            className="btn btn-sm btn-primary"
+                                        >
+                                            <MdEdit size={24} />
+                                        </Link>
 
-                                    <button className="btn btn-icon btn-danger ml-1" onClick={() => handleDeleteFood(food.id)}>
-                                        <MdDelete size={24} />
-                                    </button>
+                                        <button className="btn btn-sm btn-danger" onClick={() => handleDeleteFood(food.id)}>
+                                            <MdDelete size={24} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

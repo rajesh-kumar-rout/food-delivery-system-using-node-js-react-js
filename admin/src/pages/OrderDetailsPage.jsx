@@ -1,8 +1,8 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import Loader from "../components/Loader"
 import { toast } from "react-toastify"
+import Loader from "../components/Loader"
 import { currency } from "../utils/functions"
 
 export default function OrderDetailsPage() {
@@ -65,19 +65,19 @@ console.log(deliveryAgentsRes.data)
     }
 
     return (
-        <div className="order-details">
-            <div className="card order-details-card">
-                <h4 className="card-header card-title">Foods</h4>
-                <div className="card-body order-details-body">
+        <div className="details">
+            <div className="card details-card">
+                <p className="card-header card-title">Foods</p>
+                <div className="card-body details-body">
                     {foods.map(food => (
                         <p>{food.name} &times; {food.quantity}</p>
                     ))}
                 </div>
             </div>
 
-            <div className="card order-details-card">
-                <h4 className="card-header card-title">Address</h4>
-                <div className="card-body order-details-body">
+            <div className="card details-card">
+                <p className="card-header card-title">Address</p>
+                <div className="card-body details-body">
                     <p>Name : {deliveryAddress.name}</p>
                     <p>Street : {deliveryAddress.street}</p>
                     <p>Near : {deliveryAddress.landmark}</p>
@@ -86,9 +86,9 @@ console.log(deliveryAgentsRes.data)
                 </div>
             </div>
 
-            <div className="card order-details-card">
-                <h4 className="card-header card-title">Payment Details</h4>
-                <div className="card-body order-details-body">
+            <div className="card details-card">
+                <p className="card-header card-title">Payment Details</p>
+                <div className="card-body details-body">
                     <p>Food Price : {currency.format(paymentDetails.foodPrice)}</p>
                     <p>Gst : {paymentDetails.gstPercentage}%</p>
                     <p>Delivery Fee : {currency.format(paymentDetails.deliveryFee)}</p>
@@ -96,8 +96,8 @@ console.log(deliveryAgentsRes.data)
                 </div>
             </div>
 
-            <div className="card order-details-card">
-                <h4 className="card-header card-title">Update</h4>
+            <div className="card details-card">
+                <p className="card-header card-title">Edit Order</p>
 
                 <form className="card-body" onSubmit={handleSubmit}>
                     <div className="form-group">

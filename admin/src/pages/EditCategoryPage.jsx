@@ -1,20 +1,14 @@
 import { ErrorMessage, Field, Form, Formik } from "formik"
+import { useRef } from "react"
 import { useLocation } from "react-router-dom"
 import { toast } from "react-toastify"
-import * as yup from "yup"
 import axios from "../utils/axios"
+import { handleImage } from "../utils/functions"
 import { categorySchema } from "../utils/validationSchemas"
-
-const schema = yup.object().shape({
-    name: yup.string()
-        .trim()
-        .min(2, "Name must be at least 2 characters")
-        .max(30, "Name must be within 30 characters")
-        .required("Name is required")
-})
 
 export default function EditCategoryPage() {
     const { state } = useLocation()
+    const imgRef = useRef()
 
     const handleSubmit = async (values, { setSubmitting }) => {
         setSubmitting(true)
@@ -24,8 +18,10 @@ export default function EditCategoryPage() {
 
             toast.success("Category updated")
 
+            imgRef.current.value = ""
+
         } catch ({ response }) {
-            
+
             response?.status === 409 && toast.error("Category already exists")
         }
 
@@ -38,9 +34,9 @@ export default function EditCategoryPage() {
             validationSchema={categorySchema}
             onSubmit={handleSubmit}
         >
-            {({ isSubmitting }) => (
-                <Form className="card form">
-                    <h2 className="card-header card-header-title">Edit Category</h2>
+            {({ isSubmitting, setFieldValue }) => (
+                <Form className="card">
+                    <p className="card-header card-title">Edit Category</p>
 
                     <div className="card-body">
                         <div className="form-group">
@@ -55,12 +51,15 @@ export default function EditCategoryPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="imageUrl" className="form-label">Image</label>
-                            <Field
-                                type="text"
-                                id="imageUrl"
+                            <label htmlFor="image" className="form-label">Image</label>
+                            <input
+                                type="file"
+                                id="image"
                                 className="form-control"
-                                name="imageUrl"
+                                name="image"
+                                accept=".png, .jpeg, .jpg"
+                                ref={imgRef}
+                                onChange={event => handleImage(event, setFieldValue)}
                             />
                         </div>
 

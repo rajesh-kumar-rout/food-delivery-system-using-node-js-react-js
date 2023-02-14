@@ -1,4 +1,6 @@
 import { Route, Routes } from "react-router-dom"
+import Auth from "./components/Auth"
+import Authenticated from "./components/Authenticated"
 import Layout from "./components/Layout"
 import CategoriesPage from "./pages/CategoriesPage"
 import CreateCategoryPage from "./pages/CreateCategoryPage"
@@ -16,8 +18,6 @@ import OrderDetailsPage from "./pages/OrderDetailsPage"
 import OrdersPage from "./pages/OrdersPage"
 import SettingsPage from "./pages/SettingsPage"
 import SlidersPage from "./pages/SlidersPage"
-import Auth from "./components/Auth"
-import Authenticated from "./components/Authenticated"
 
 export default function App() {
     return (
@@ -29,7 +29,7 @@ export default function App() {
 
                         <Route path="/foods" element={<FoodsPage />} />
                         <Route path="/foods/create" element={<CreateFoodPage />} />
-                        <Route path="/foods/:foodId" element={<EditFoodPage />} />
+                        <Route path="/foods/edit" element={<EditFoodPage />} />
 
                         <Route path="/categories" element={<CategoriesPage />} />
                         <Route path="/categories/create" element={<CreateCategoryPage />} />

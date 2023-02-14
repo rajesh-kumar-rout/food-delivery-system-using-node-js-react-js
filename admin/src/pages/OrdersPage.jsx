@@ -12,7 +12,7 @@ export default function OrdersPage() {
 
     const fetchOrders = async () => {
         const { data } = await axios.get("/orders")
-console.log(data)
+        console.log(data)
         setOrders(data)
 
         setIsLoading(false)
@@ -22,15 +22,15 @@ console.log(data)
         fetchOrders()
     }, [])
 
-    if(isLoading){
-        return <Loader/>
+    if (isLoading) {
+        return <Loader />
     }
 
     return (
         <div className="card">
-            <div className="card-header card-header-title">Orders</div>
+            <p className="card-header card-title">Orders</p>
             <div className="table">
-                <table className="min-w-700">
+                <table style={{ minWidth: 700 }}>
                     <thead>
                         <tr>
                             <th>Order ID</th>
@@ -50,7 +50,7 @@ console.log(data)
                                 </td>
                                 <td>{moment(order.createdAt).format("D MMM GG h:m A")}</td>
                                 <td>
-                                    <Link className="btn btn-icon btn-primary" to={`/orders/${order.id}`}>
+                                    <Link className="btn btn-sm btn-primary" to={`/orders/${order.id}`}>
                                         <MdVisibility size={24} />
                                     </Link>
                                 </td>
