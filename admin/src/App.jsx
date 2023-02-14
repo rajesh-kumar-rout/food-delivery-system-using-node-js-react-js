@@ -25,29 +25,29 @@ export default function App() {
             <Routes>
                 <Route element={<Authenticated />}>
                     <Route element={<Layout />}>
-                        <Route path="/" element={<HomePage />} />
+                        <Route path="/admin" element={<HomePage />} />
 
-                        <Route path="/foods" element={<FoodsPage />} />
-                        <Route path="/foods/create" element={<CreateFoodPage />} />
-                        <Route path="/foods/edit" element={<EditFoodPage />} />
+                        <Route path="/admin/foods" element={<FoodsPage />} />
+                        <Route path="/admin/foods/create" element={<CreateFoodPage />} />
+                        <Route path="/admin/foods/edit" element={<EditFoodPage />} />
 
-                        <Route path="/categories" element={<CategoriesPage />} />
-                        <Route path="/categories/create" element={<CreateCategoryPage />} />
-                        <Route path="/categories/edit" element={<EditCategoryPage />} />
+                        <Route path="/admin/categories" element={<CategoriesPage />} />
+                        <Route path="/admin/categories/create" element={<CreateCategoryPage />} />
+                        <Route path="/admin/categories/edit" element={<EditCategoryPage />} />
 
-                        <Route path="/delivery-agents" element={<DeliveryAgentsPage />} />
-                        <Route path="/delivery-agents/create" element={<CreateDelveryAgentPage />} />
+                        <Route path="/admin/delivery-agents" element={<DeliveryAgentsPage />} />
+                        <Route path="/admin/delivery-agents/create" element={<CreateDelveryAgentPage />} />
 
-                        <Route path="/orders" element={< OrdersPage />} />
-                        <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
+                        <Route path="/admin/orders" element={< OrdersPage />} />
+                        <Route path="/admin/orders/:orderId" element={<OrderDetailsPage />} />
 
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="/settings/edit" element={<EditSettingPage />} />
+                        <Route path="/admin/settings" element={<SettingsPage />} />
+                        <Route path="/admin/settings/edit" element={<EditSettingPage />} />
 
-                        <Route path="/sliders" element={<SlidersPage />} />
-                        <Route path="/sliders/create" element={<CreateSliderPage />} />
+                        <Route path="/admin/sliders" element={<SlidersPage />} />
+                        <Route path="/admin/sliders/create" element={<CreateSliderPage />} />
 
-                        <Route path="/customers" element={<CustomersPage />} />
+                        <Route path="/admin/customers" element={<CustomersPage />} />
                     </Route>
                 </Route>
             </Routes>
