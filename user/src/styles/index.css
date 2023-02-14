@@ -51,11 +51,11 @@
 }
 
 .food-type[data-vegan="false"] {
-    border-color: red;
+    border-color: var(--red600);
 }
 
 .food-type[data-vegan="false"]::after {
-    background-color: red;
+    background-color: var(--red600);
 }
 
 /* loader */

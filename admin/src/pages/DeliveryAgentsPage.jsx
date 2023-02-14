@@ -7,12 +7,14 @@ import axios from "../utils/axios"
 
 export default function DeliveryAgentsPage() {
     const [deliveryAgents, setDeliveryBoys] = useState([])
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     const fetchDeliveryBoys = async () => {
         const { data } = await axios.get("/delivery-agents")
      
         setDeliveryBoys(data)
+
+        setIsLoading(false)
     }
 
     const handleDeleteDeliveryAgent = async (deliveryBoyId) => {

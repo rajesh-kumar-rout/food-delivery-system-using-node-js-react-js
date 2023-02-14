@@ -8,7 +8,7 @@ import { currency } from "../utils/functions"
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState({})
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     const fetchSettings = async () => {
         const { data } = await axios.get("/settings")

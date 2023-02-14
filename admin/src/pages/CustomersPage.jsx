@@ -5,11 +5,12 @@ import axios from "../utils/axios"
 
 export default function CustomersPage() {
     const [customeres, setCustomers] = useState([])
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     const fetchCustomers = async () => {
         const { data } = await axios.get("/customers")
         setCustomers(data)
+        setIsLoading(false)
     }
 
     useEffect(() => {
