@@ -17,11 +17,13 @@ import userCategories from "./userRoutes/categories.js"
 import userFoods from "./userRoutes/foods.js"
 import userOrders from "./userRoutes/orders.js"
 import userSliders from "./userRoutes/sliders.js"
+import path from "path"
 
 dotenv.config()
 
 const app = express()
 
+app.use(express.static("public"))
 app.use(express.json({ limit: "1mb" }))
 app.use(express.urlencoded({ limit: "1mb", extended: true }))
 app.use(cors())
@@ -42,6 +44,14 @@ app.use("/api/sliders", userSliders)
 app.use("/api/orders", isAuthenticated, userOrders)
 app.use("/api/cart", isAuthenticated, userCart)
 app.use("/api/auth", userAuth)
+
+app.get("/admin/*", (req, res) => {
+    res.sendFile(path.resolve("public/admin/index.html"))
+})
+
+app.get("/*", (req, res) => {
+    res.sendFile(path.resolve("public/user/index.html"))
+})
 
 app.listen(process.env.PORT, () => {
     console.log(`Listening to port ${process.env.PORT}`);
