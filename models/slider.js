@@ -5,5 +5,9 @@ export default sequelize.define("Slider", {
     imageUrl: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    imageId: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 })

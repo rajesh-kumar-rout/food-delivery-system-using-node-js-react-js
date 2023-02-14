@@ -1,18 +1,12 @@
-import dotenv from "dotenv"
 import jwt from "jsonwebtoken"
 
-dotenv.config()
-
 export async function authenticate(req, res, next) {
-    let { authorization } = req.headers 
+    const authorization = req.headers.authorization
 
-    if(authorization && authorization.startsWith("Bearer ")) {
-        authorization = authorization.substring(7, authorization.length)
-    }
+    const token = authorization && authorization.startsWith("Bearer ") ? authorization.substring(7, authorization.length) : null
 
     try {
-        
-        const { _id, isAdmin } = jwt.verify(authorization, process.env.AUTH_TOKEN_SECRECT)
+        const { _id, isAdmin } = jwt.verify(token, process.env.AUTH_TOKEN_SECRECT)
 
         req._id = _id 
 
@@ -27,6 +21,7 @@ export async function authenticate(req, res, next) {
 }
 
 export async function isAuthenticated(req, res, next) {
+
     if (!req._id) {
         return res.status(401).json({ error: "Authentication failed" })
     }
@@ -35,8 +30,9 @@ export async function isAuthenticated(req, res, next) {
 }
 
 export async function isAdmin(req, res, next) {
+
     if (!req.isAdmin) {
-        return res.status(401).json({ error: "Authentication failed" })
+        return res.status(403).json({ error: "Access denied" })
     }
 
     next()

@@ -14,6 +14,10 @@ export default sequelize.define("Food", {
         type: DataTypes.STRING,
         allowNull: false
     },
+    imageId: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     isVegan: {
         type: DataTypes.BOOLEAN,
         defaultValue: true

@@ -2,6 +2,7 @@ import { Router } from "express"
 import { body, param } from "express-validator"
 import { Op } from "sequelize"
 import { Category } from "../models/model.js"
+import { destroy, upload } from "../utils/cloudinary.js"
 import { checkValidationError } from "../utils/validator.js"
 
 const router = Router()
@@ -21,20 +22,23 @@ router.post(
         .notEmpty()
         .isLength({ max: 30 }),
 
-    body("imageUrl").isURL(),
+    body("image").isString().notEmpty(),
 
     checkValidationError,
 
     async (req, res) => {
-        const { name, imageUrl } = req.body
+        const { name, image } = req.body
 
         if (await Category.findOne({ where: {name} })) {
             return res.status(409).json({ error: "Category already exists" })
         }
 
+        const imageRes = await upload(image)
+
         const category = await Category.create({
             name,
-            imageUrl
+            imageUrl: imageRes.url,
+            imageId: imageRes.id
         })
 
         res.status(201).json(category)
@@ -44,7 +48,7 @@ router.post(
 router.patch(
     "/:categoryId",
 
-    param("categoryId").isInt(),
+    param("categoryId").isInt().toInt(),
 
     body("name")
         .isString()
@@ -52,11 +56,9 @@ router.patch(
         .notEmpty()
         .isLength({ max: 30 }),
 
-    body("imageUrl").optional().isURL(),
-
     async (req, res) => {
         const { categoryId } = req.params
-        const { name, imageUrl } = req.body
+        const { name, image } = req.body
 
         const isCategoryExists = await Category.findOne({
             where: {
@@ -79,7 +81,15 @@ router.patch(
 
         category.name = name
 
-        category.imageUrl = imageUrl
+        if(image){
+            const imageRes = await upload(image)
+
+            await destroy(category.imageId)
+
+            category.imageUrl = imageRes.url 
+
+            category.imageId = imageRes.id
+        }
 
         await category.save()
 
@@ -95,6 +105,8 @@ router.delete("/:categoryId", async (req, res) => {
     if (!category) {
         return res.status(404).json({ error: "Category not found" })
     }
+
+    await destroy(category.imageId)
 
     await category.destroy()
 

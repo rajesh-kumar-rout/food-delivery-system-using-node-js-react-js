@@ -1,6 +1,6 @@
 
 import cors from "cors"
-import { config } from "dotenv"
+import dotenv from "dotenv"
 import express from "express"
 import adminCategories from "./adminRoutes/categories.js"
 import adminCustomers from "./adminRoutes/customers.js"
@@ -17,13 +17,13 @@ import userCategories from "./userRoutes/categories.js"
 import userFoods from "./userRoutes/foods.js"
 import userOrders from "./userRoutes/orders.js"
 import userSliders from "./userRoutes/sliders.js"
-import {Category} from "./models/model.js"
-config()
+
+dotenv.config()
 
 const app = express()
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json({ limit: "1mb" }))
+app.use(express.urlencoded({ limit: "1mb", extended: true }))
 app.use(cors())
 app.use(authenticate)
 

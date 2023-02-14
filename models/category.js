@@ -9,5 +9,9 @@ export default sequelize.define("Category", {
     imageUrl: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    imageId: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 })
