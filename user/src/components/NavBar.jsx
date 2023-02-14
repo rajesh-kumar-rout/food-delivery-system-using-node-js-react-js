@@ -1,4 +1,3 @@
-import axios from "axios"
 import { useContext, useState } from "react"
 import { MdArrowDropDown, MdClose, MdLogin, MdMenu, MdOutlineEdit, MdOutlineHome, MdOutlineLogout, MdOutlinePerson, MdOutlineRestaurantMenu, MdOutlineShoppingCart, MdOutlineTask, MdPersonAdd, MdSearch } from "react-icons/md"
 import { Link } from "react-router-dom"
@@ -79,7 +78,7 @@ export default function NavBar() {
                         </Navigation>
                     </li>
 
-                    <li className="relative">
+                    <li className="navbar-dropdown-wrapper">
                         <Navigation 
                             activeClass="navbar-link-active" 
                             className="navbar-link" 

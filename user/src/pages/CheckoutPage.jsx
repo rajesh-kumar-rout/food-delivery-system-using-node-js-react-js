@@ -3,23 +3,15 @@ import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import swal from "sweetalert"
-import { checkoutSchema } from "utils/validationSchema"
 import Loader from "../components/Loader"
 import axios from "../utils/axios"
+import { checkoutSchema } from "../utils/validationSchema"
 
 export default function CheckoutPage() {
     const navigate = useNavigate()
 
     const [pricing, setPricing] = useState({})
     const [isFetching, setIsFetching] = useState(true)
-    const [deliveryAddress, setDeliveryAddress] = useState({
-        name: "",
-        street: "",
-        landmark: "",
-        mobile: "",
-        building: "",
-        instruction: ""
-    })
 
     const fetchData = async () => {
         const { data } = await axios.get("/cart/pricing")
@@ -56,11 +48,18 @@ export default function CheckoutPage() {
 
     return (
         <Formik
-            initialValues={deliveryAddress}
+            initialValues={{
+                name: "",
+                street: "",
+                landmark: "",
+                mobile: "",
+                building: "",
+                instruction: ""
+            }}
             validationSchema={checkoutSchema}
             onSubmit={handleSubmit}
         >
-            {({ isSubmitting, values }) => (
+            {({ isSubmitting }) => (
                 <Form className="checkout">
                     <div className="card">
                         <h2 className="card-header card-title">Delivery Address</h2>
@@ -121,7 +120,7 @@ export default function CheckoutPage() {
                                 <ErrorMessage component="p" name="building" className="form-error" />
                             </div>
 
-                            <div className="form-group">
+                            <div>
                                 <label htmlFor="instruction" className="form-label">Instruction</label>
                                 <Field
                                     type="text"

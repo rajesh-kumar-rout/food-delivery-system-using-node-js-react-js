@@ -1,9 +1,9 @@
-import { AuthContext } from "components/Auth"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useContext } from "react"
 import { toast } from "react-toastify"
-import axios from "utils/axios"
-import { changePasswordSchema, updateProfileSchema } from "utils/validationSchema"
+import { AuthContext } from "../components/Auth"
+import axios from "../utils/axios"
+import { changePasswordSchema, updateProfileSchema } from "../utils/validationSchema"
 
 export default function EditProfilePage() {
     const { currentUser, setCurrentUser } = useContext(AuthContext)
@@ -58,8 +58,8 @@ export default function EditProfilePage() {
                 onSubmit={handleProfileUpdate}
             >
                 {({ isSubmitting }) => (
-                    <Form className="card max-w-500 mx-auto">
-                        <h2 className="card-header card-title">Update Profile</h2>
+                    <Form className="card" style={{ maxWidth: 500, margin: "auto" }}>
+                        <h2 className="card-header card-title">Edit Personal Info</h2>
 
                         <div className="card-body">
                             <div className="form-group">
@@ -114,7 +114,7 @@ export default function EditProfilePage() {
                 onSubmit={handlePasswordChange}
             >
                 {({ isSubmitting }) => (
-                    <Form className="card max-w-500 mx-auto mt-4" style={{ marginTop: 16 }}>
+                    <Form className="card" style={{ maxWidth: 500, margin: "16px auto 0px" }}>
                         <p className="card-header card-title">Change Password</p>
 
                         <div className="card-body">

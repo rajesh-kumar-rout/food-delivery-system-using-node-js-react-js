@@ -1,7 +1,7 @@
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { toast } from "react-toastify"
-import axios from "utils/axios"
-import { registerSchema } from "utils/validationSchema"
+import axios from "../utils/axios"
+import { registerSchema } from "../utils/validationSchema"
 
 export default function RegisterPage() {
 
@@ -35,8 +35,8 @@ export default function RegisterPage() {
             onSubmit={handleSubmit}
         >
             {({ isSubmitting }) => (
-                <Form className="card max-w-500 mx-auto">
-                    <h2 className="card-header card-title text-center">Sign Up</h2>
+                <Form className="card" style={{maxWidth: 500, margin: "auto"}}>
+                    <h2 className="card-header card-title">Register</h2>
 
                     <div className="card-body">
                         <div className="form-group">

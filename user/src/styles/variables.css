@@ -27,7 +27,7 @@
 
     --white: #FFFFFF;
     --black: #000000;
-    
+
     --color-primary100: #ffedd5;
     --color-primary: #ea580c;
     --color-primary-dark: #9a3412;
@@ -36,4 +36,3 @@
     --navbar-height: 80px;
     --layout-height: calc(100vh - var(--navbar-height));
 }
-

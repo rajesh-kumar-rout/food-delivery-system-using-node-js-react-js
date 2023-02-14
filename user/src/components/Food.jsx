@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
-import axios from "utils/axios"
-import { currency } from "utils/functions"
+import axios from "../utils/axios"
+import { currency } from "../utils/functions"
 import Button from "./Button"
 import QuantityControl from "./QtyControl"
 

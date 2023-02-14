@@ -1,22 +1,17 @@
+import { useEffect, useState } from "react"
 import { MdSearch } from "react-icons/md"
-import { useState } from "react"
-import { useEffect } from "react"
-import Food from "components/Food"
-import Loader from "components/Loader"
-import axios from "utils/axios"
 import { useSearchParams } from "react-router-dom"
+import Food from "../components/Food"
+import Loader from "../components/Loader"
+import axios from "../utils/axios"
 
 export default function SearchPage() {
     const [queries, setQueries] = useSearchParams()
-
     const query = queries.get("query") ?? ""
 
     const [isFetching, setIsFetching] = useState(true)
-
     const [categories, setCategories] = useState([])
-
     const [foods, setFoods] = useState([])
-
     const [filteredFoods, setFilteredFoods] = useState([])
 
     const fetchData = async () => {
@@ -26,8 +21,7 @@ export default function SearchPage() {
         ])
 
         setCategories(categoriesRes.data)
-        console.log(foodsRes.data)
-        console.log(categoriesRes.data)
+
         setFoods(foodsRes.data)
 
         setIsFetching(false)
@@ -61,7 +55,8 @@ export default function SearchPage() {
                 <input
                     type="search"
                     value={query}
-                    className="form-control border-none"
+                    className="form-control"
+                    style={{ border: "none" }}
                     onChange={event => setQueries(`query=${event.target.value}`)}
                     placeholder="Search food here..."
                 />

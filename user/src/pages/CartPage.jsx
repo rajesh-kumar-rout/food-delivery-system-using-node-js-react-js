@@ -1,30 +1,9 @@
-import Loader from "components/Loader"
-import QtyControl from "components/QtyControl"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import axios from "utils/axios"
-import { currency } from "utils/functions"
-
-const cart = [
-    {
-        name: "Black Gold Dumpling Noodles",
-        price: 456,
-        qty: 3,
-        imgUrl: "https://res.cloudinary.com/dhyc0vsbz/image/upload/v1669736349/cwtenlmg6ngxajkqsqog.jpg"
-    },
-    {
-        name: "Keema masala noodles",
-        price: 678,
-        qty: 1,
-        imgUrl: "https://res.cloudinary.com/dhyc0vsbz/image/upload/v1669736349/cwtenlmg6ngxajkqsqog.jpg"
-    },
-    {
-        name: "Paneer Mirch Masala Birrito",
-        price: 789,
-        qty: 2,
-        imgUrl: "https://res.cloudinary.com/dhyc0vsbz/image/upload/v1669736396/agw17rwvia2ol1eo4izj.jpg"
-    },
-]
+import Loader from "../components/Loader"
+import QtyControl from "../components/QtyControl"
+import axios from "../utils/axios"
+import { currency } from "../utils/functions"
 
 export default function CartPage() {
     const [cart, setCart] = useState([])
@@ -36,8 +15,7 @@ export default function CartPage() {
             axios.get("/cart"),
             axios.get("/cart/pricing")
         ])
-console.log(cartRes.data)
-console.log(pricingRes.data)
+
         setPricing(pricingRes.data)
 
         setCart(cartRes.data)

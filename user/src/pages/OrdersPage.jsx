@@ -1,9 +1,9 @@
-import Loader from "components/Loader"
 import moment from "moment/moment"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import axios from "utils/axios"
-import { currency } from "utils/functions"
+import Loader from "../components/Loader"
+import axios from "../utils/axios"
+import { currency } from "../utils/functions"
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState([])
@@ -11,7 +11,7 @@ export default function OrdersPage() {
 
     const fetchOrders = async () => {
         const { data } = await axios.get("/orders")
-console.log(data)
+
         setOrders(data)
 
         setIsFetching(false)

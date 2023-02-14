@@ -1,8 +1,8 @@
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
-import axios from "utils/axios"
-import { loginSchema } from "utils/validationSchema"
+import axios from "../utils/axios"
+import { loginSchema } from "../utils/validationSchema"
 
 export default function LoginPage() {
     const [queries] = useSearchParams()
@@ -35,8 +35,8 @@ export default function LoginPage() {
             onSubmit={handleSubmit}
         >
             {({ isSubmitting }) => (
-                <Form className="card max-w-500 mx-auto">
-                    <h2 className="card-header card-title text-center">Login</h2>
+                <Form className="card"  style={{maxWidth: 500, margin: "auto"}}>
+                    <h2 className="card-header card-title">Login</h2>
 
                     <div className="card-body">
                         <div className="form-group">

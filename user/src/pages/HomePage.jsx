@@ -1,9 +1,9 @@
-import { Carousel } from "react-responsive-carousel"
 import { useEffect, useState } from "react"
-import Loader from "components/Loader"
-import Food from "components/Food"
-import axios from "utils/axios"
+import { Carousel } from "react-responsive-carousel"
 import "react-responsive-carousel/lib/styles/carousel.min.css"
+import Food from "../components/Food"
+import Loader from "../components/Loader"
+import axios from "../utils/axios"
 
 export default function HomePage() {
     const [sliders, setSliders] = useState([])
