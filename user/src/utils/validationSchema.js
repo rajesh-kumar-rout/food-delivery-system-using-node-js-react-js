@@ -45,7 +45,7 @@ export const updateProfileSchema = object().shape({
 })
 
 export const loginSchema = object().shape({
-    email: string().email().required("Email is required"),
+    email: string().email("Invalid email").required("Email is required"),
 
     password: string().required("Password is required")
 })
@@ -58,7 +58,7 @@ export const registerSchema = object().shape({
 
     email: string()
         .trim()
-        .email()
+        .email("Invalid email")
         .max(30, "Email must be within 30 characters")
         .required("Email is required"),
 
