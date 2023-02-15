@@ -7,7 +7,7 @@ export default sequelize.define("DeliveryAddress", {
         allowNull: false
     },
     mobile: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false
     },
     street: {
