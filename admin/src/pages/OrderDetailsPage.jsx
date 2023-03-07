@@ -65,19 +65,19 @@ console.log(deliveryAgentsRes.data)
     }
 
     return (
-        <div className="details">
-            <div className="card details-card">
+        <div className="order">
+            <div className="card order-card">
                 <p className="card-header card-title">Foods</p>
-                <div className="card-body details-body">
+                <div className="card-body order-body">
                     {foods.map(food => (
                         <p>{food.name} &times; {food.quantity}</p>
                     ))}
                 </div>
             </div>
 
-            <div className="card details-card">
+            <div className="card order-card">
                 <p className="card-header card-title">Address</p>
-                <div className="card-body details-body">
+                <div className="card-body order-body">
                     <p>Name : {deliveryAddress.name}</p>
                     <p>Street : {deliveryAddress.street}</p>
                     <p>Near : {deliveryAddress.landmark}</p>
@@ -86,9 +86,9 @@ console.log(deliveryAgentsRes.data)
                 </div>
             </div>
 
-            <div className="card details-card">
+            <div className="card order-card">
                 <p className="card-header card-title">Payment Details</p>
-                <div className="card-body details-body">
+                <div className="card-body order-body">
                     <p>Food Price : {currency.format(paymentDetails.foodPrice)}</p>
                     <p>Gst : {paymentDetails.gstPercentage}%</p>
                     <p>Delivery Fee : {currency.format(paymentDetails.deliveryFee)}</p>
@@ -96,7 +96,7 @@ console.log(deliveryAgentsRes.data)
                 </div>
             </div>
 
-            <div className="card details-card">
+            <div className="card order-card">
                 <p className="card-header card-title">Edit Order</p>
 
                 <form className="card-body" onSubmit={handleSubmit}>

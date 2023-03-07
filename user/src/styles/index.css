@@ -403,7 +403,7 @@ th {
 }
 
 @media (max-width: 768px) {
-    .order-details {
+    .details {
         grid-template-columns: 1fr;
     }
 }

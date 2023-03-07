@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import Loader from "../components/Loader"
 import axios from "../utils/axios"
 
-export default function HomePage() {
+export default function DashboardPage() {
     const [data, setData] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 

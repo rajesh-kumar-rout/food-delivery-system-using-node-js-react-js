@@ -5,86 +5,86 @@ import Navigation from "./Navigation"
 export default function SideBar({ show, onNavigate }) {
     const [menus, setMenus] = useState([
         {
-            link: "/",
+            link: "/admin",
             name: "Dashboard",
             icon: <MdHome size={24} />
         },
         {
-            link: "/sliders",
+            link: "/admin/sliders",
             name: "Slider",
             icon: <MdPhotoLibrary size={24} />,
             showSubMenus: false,
             subMenus: [
                 {
-                    link: "/sliders/create",
+                    link: "/admin/sliders/create",
                     name: "Create New"
                 },
                 {
-                    link: "/sliders",
+                    link: "/admin/sliders",
                     name: "List All"
                 },
             ]
         },
         {
-            link: "/categories",
+            link: "/admin/categories",
             name: "Category",
             icon: <MdReorder size={24} />,
             showSubMenus: false,
             subMenus: [
                 {
-                    link: "/categories/create",
+                    link: "/admin/categories/create",
                     name: "Create New"
                 },
                 {
-                    link: "/categories",
+                    link: "/admin/categories",
                     name: "List All"
                 },
             ]
         },
         {
-            link: "/foods",
+            link: "/admin/foods",
             name: "Food",
             icon: <MdRestaurantMenu size={24} />,
             showSubMenus: false,
             subMenus: [
                 {
-                    link: "/foods/create",
+                    link: "/admin/foods/create",
                     name: "Create New"
                 },
                 {
-                    link: "/foods",
+                    link: "/admin/foods",
                     name: "List All"
                 }
             ]
         },
         {
-            link: "/delivery-agents",
+            link: "/admin/delivery-agents",
             name: "Delivery Agent",
             icon: <MdPerson size={24} />,
             showSubMenus: false,
             subMenus: [
                 {
-                    link: "/delivery-agents/create",
+                    link: "/admin/delivery-agents/create",
                     name: "Create New"
                 },
                 {
-                    link: "/delivery-agents",
+                    link: "/admin/delivery-agents",
                     name: "List All"
                 }
             ]
         },
         {
-            link: "/orders",
+            link: "/admin/orders",
             name: "Orders",
             icon: <MdReorder size={24} />
         },
         {
-            link: "/customers",
+            link: "/admin/customers",
             name: "Customers",
             icon: <MdPeople size={24} />
         },
         {
-            link: "/settings",
+            link: "/admin/settings",
             name: "Settings",
             icon: <MdSettings size={24} />
         }

@@ -94,7 +94,7 @@ export default function FoodsPage() {
                                 <td>
                                     <div className="table-btn-gap">
                                         <Link
-                                            to="/foods/edit"
+                                            to="/admin/foods/edit"
                                             state={food}
                                             className="btn btn-sm btn-primary"
                                         >

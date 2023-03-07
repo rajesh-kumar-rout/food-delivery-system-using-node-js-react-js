@@ -26,7 +26,7 @@ export default function CheckoutPage() {
 
         swal({
             title: "Thank You",
-            text: `You order placed successfully. Tracking id : ${data.orderId}`,
+            text: `You order placed successfully. Tracking id : ${data.id}`,
             icon: "success",
             button: "Ok"
         })

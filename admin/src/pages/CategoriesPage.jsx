@@ -73,7 +73,7 @@ export default function CategoriesPage() {
                                 <td>
                                     <div className="table-btn-gap">
                                         <Link
-                                            to="/categories/edit"
+                                            to="/admin/categories/edit"
                                             className="btn btn-sm btn-primary"
                                             state={category}
                                         >

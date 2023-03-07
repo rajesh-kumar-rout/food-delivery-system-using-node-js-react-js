@@ -50,7 +50,7 @@ export default function OrdersPage() {
                                 </td>
                                 <td>{moment(order.createdAt).format("D MMM GG h:m A")}</td>
                                 <td>
-                                    <Link className="btn btn-sm btn-primary" to={`/orders/${order.id}`}>
+                                    <Link className="btn btn-sm btn-primary" to={`/admin/orders/${order.id}`}>
                                         <MdVisibility size={24} />
                                     </Link>
                                 </td>

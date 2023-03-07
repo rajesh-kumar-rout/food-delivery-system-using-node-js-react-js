@@ -6,6 +6,7 @@ export default function Navigation(props) {
     return (
         <NavLink
             {...others}
+            end
             className={({ isActive }) => `${className} ${isActive ? activeClass : ""}`}
         >
             {props.children}

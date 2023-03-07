@@ -51,7 +51,7 @@ export default function OrdersPage() {
                                     <td>{order.id}</td>
                                     <td>{currency.format(order.paymentDetails.totalAmount)}</td>
                                     <td>
-                                        <p className={`badge badge-success`}>
+                                        <p className="badge badge-success">
                                             {order.status}
                                         </p>
                                     </td>

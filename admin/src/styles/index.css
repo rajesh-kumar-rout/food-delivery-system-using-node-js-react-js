@@ -266,29 +266,29 @@
     }
 }
 
-/* order details page */
+/* order-details-page */
 
-.details {
+.order {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
 }
 
-@media (max-width: var(--desktop-screen)) {
-    .details {
-        grid-template-columns: repeat(1, 1fr);
-    }
-}
-
-.details-card {
+.order-card {
     height: min-content;
 }
 
-.details-body {
+.order-body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .order {
+        grid-template-columns: repeat(1, 1fr);
+    }
 }
 
 /* home page */

@@ -46,7 +46,7 @@ export default function SettingsPage() {
                             <td>{moment(settings.updatedAt).format("D MMM GG h:m A")}</td>
                             <td>
                                 <Link
-                                    to="/settings/edit"
+                                    to="/admin/settings/edit"
                                     className="btn btn-sm btn-primary"
                                 >
                                     <MdEdit size={24} />
